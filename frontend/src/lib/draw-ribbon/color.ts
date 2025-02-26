@@ -1,0 +1,35 @@
+const colors: { [key: string]: string } = {
+    Qa: "#78A6AF",
+    Qb: "#5B9EA6",
+    Qc: "#3E7D86",
+    Qd: "#97BCC2",
+    H: "#F04C08",
+    N: "#D8BE3C",
+    D: "#47957F",
+    P: "#C33E51",
+    B2: "#1F779A",
+    C2: "#000000",
+    B3: "#FA9A26",
+    B1: "#2F54E3",
+    M: "#A45530",
+    A2: "#8B4E67",
+    J1: "#54AB53",
+    G: "#E97B4A",
+    C1: "#B07DF4",
+    A1a: "#4DB5E3",
+    A1b: "#3DC2AE",
+    L: "#7DC29F",
+    J2: "#E64657",
+    K: "#170B88",
+    O2: "#AB5BA8",
+    I: "#3425FB",
+    Ea: "#3DC2AE",
+    Eb: "#828282",
+    R: "#00B93E",
+    O1: "#FBD76C",
+    F: "#9B6870",
+};
+
+export function getColor(key: string) {
+    return colors[key.toUpperCase()] || "#333333";
+}
