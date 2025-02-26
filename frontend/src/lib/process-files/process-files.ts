@@ -27,8 +27,9 @@ export function processFiles(
     }
 ): IRibbonData {
     const data: IRibbonData = {
-        organisms: {},
+        orgMap: {},
         ribons: [],
+        organisms: [],
     };
     const geneToChromosome: {
         [key: string]: {
@@ -61,13 +62,14 @@ export function processFiles(
             ribbonCount[chromosome] = 0;
             chromosomes.add(chromosome);
         }
-        data.organisms[orgFile.name] = {
+        data.orgMap[orgFile.name] = {
             chromosomes: Array.from(chromosomes).filter(
                 (c) => count.get(c) || 0 >= settings.min_genes_in_chromosome
             ),
             id: orgFile.name,
             ribbonCount: ribbonCount,
         };
+        data.organisms.push(orgFile.name);
     }
 
     let ribbons: IRibbon[] = [];
@@ -76,7 +78,7 @@ export function processFiles(
         if (syntenyFile[orthoGroup].postProb < settings.post_prob) continue;
         const syntenyGroup = syntenyFile[orthoGroup].syntenyGroup;
         const connections: IConnection[] = [];
-        for (const orgId of Object.keys(data.organisms)) {
+        for (const orgId of Object.keys(data.orgMap)) {
             for (const gene of orgToGenes[orgId]) {
                 try {
                     const { chromosome, startIndex, endIndex } =
@@ -88,7 +90,7 @@ export function processFiles(
                         startIndex,
                         endIndex,
                     });
-                    data.organisms[orgId].ribbonCount[chromosome] += 1;
+                    data.orgMap[orgId].ribbonCount[chromosome] += 1;
                 } catch {
                     console.log("couldnot find:", { gene, orgId });
                 }
@@ -101,19 +103,19 @@ export function processFiles(
     ribbons = ribbons.filter(({ connections }) =>
         connections.every(({ organismId, chromosome }) => {
             const strand_count =
-                data.organisms[organismId].ribbonCount[chromosome];
+                data.orgMap[organismId].ribbonCount[chromosome];
             return strand_count >= settings.strand_count_min;
         })
     );
 
-    for (const orgId of Object.keys(data.organisms)) {
-        for (const chromosome of data.organisms[orgId].chromosomes) {
+    for (const orgId of Object.keys(data.orgMap)) {
+        for (const chromosome of data.orgMap[orgId].chromosomes) {
             if (deleted.has(chromosome)) continue;
-            const org = data.organisms[orgId];
+            const org = data.orgMap[orgId];
             if (org.ribbonCount[chromosome] >= settings.strand_count_min) {
                 continue;
             }
-            data.organisms[orgId].chromosomes = org.chromosomes.filter(
+            data.orgMap[orgId].chromosomes = org.chromosomes.filter(
                 (c) => c !== chromosome
             );
             deleted.add(chromosome);
@@ -130,11 +132,11 @@ export function processFiles(
             chromosomes.add(chromosome);
             ribbonCount[chromosome] = 0;
         }
-        data.organisms[orgFile.name].ribbonCount = ribbonCount;
+        data.orgMap[orgFile.name].ribbonCount = ribbonCount;
     }
     for (const { connections } of ribbons) {
         for (const { chromosome, organismId } of connections) {
-            data.organisms[organismId].ribbonCount[chromosome] += 1;
+            data.orgMap[organismId].ribbonCount[chromosome] += 1;
         }
     }
 

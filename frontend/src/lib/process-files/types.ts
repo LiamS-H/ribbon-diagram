@@ -27,8 +27,25 @@ interface IRibbon {
 }
 
 interface IRibbonData {
-    organisms: { [key: string]: IOrganism };
+    orgMap: { [key: string]: IOrganism };
+    organisms: string[];
     ribons: IRibbon[];
+}
+
+interface IConnectionMap {
+    map: {
+        [key: string]: {
+            map: {
+                [key: string]: {
+                    map: { [key: string]: number };
+                    syntenies: string[];
+                    total: number;
+                };
+            };
+            destinations: string[];
+        };
+    };
+    sources: string[];
 }
 
 interface OrgFile {
@@ -69,6 +86,7 @@ export type {
     IOrganism,
     IRibbon,
     IRibbonData,
+    IConnectionMap,
     OrgFile,
     GroupsFile,
     SyntenyFile,
