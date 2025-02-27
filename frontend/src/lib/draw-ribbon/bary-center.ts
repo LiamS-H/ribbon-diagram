@@ -3,7 +3,7 @@ import { IConnectionMap, IRibbonData } from "../process-files/types";
 export function barycenterChromosomeOrder(
     ribbonData: IRibbonData,
     connectionMap: IConnectionMap,
-    maxIterations: number = 100
+    maxIterations: number = 200
 ): { [key: string]: string[] } {
     const result: { [key: string]: string[] } = {};
 
@@ -17,14 +17,14 @@ export function barycenterChromosomeOrder(
 
     const organisms = [...ribbonData.organisms];
 
-    while (hasChanges && iteration < maxIterations) {
+    while (iteration < maxIterations) {
         if (!hasChanges && mutate) {
             break;
         }
-        if (!hasChanges) {
-            mutate = true;
-        } else {
+        if (hasChanges) {
             mutate = false;
+        } else {
+            mutate = true;
         }
         hasChanges = false;
         iteration++;
@@ -38,9 +38,6 @@ export function barycenterChromosomeOrder(
             for (const chromosome of result[currentOrg]) {
                 let weightedConnections = 0;
                 let totalConnections = 0;
-                // const curPosition =
-                //     result[currentOrg].indexOf(chromosome) /
-                //     result[currentOrg].length;
 
                 if (connectionMap.sources.includes(chromosome)) {
                     const connections = connectionMap.map[chromosome];
@@ -51,7 +48,8 @@ export function barycenterChromosomeOrder(
                             ribbonData
                         );
 
-                        const weight = connections.map[destChromosome].total;
+                        const weight =
+                            connections.map[destChromosome].total ** 2;
                         const position =
                             result[targetOrganism].indexOf(destChromosome) /
                             result[targetOrganism].length;
@@ -76,7 +74,7 @@ export function barycenterChromosomeOrder(
 
                         const weight =
                             connectionMap.map[sourceChromosome].map[chromosome]
-                                .total;
+                                .total ** 2;
                         const position =
                             result[sourceOrganism].indexOf(sourceChromosome) /
                             result[sourceOrganism].length;
@@ -89,9 +87,9 @@ export function barycenterChromosomeOrder(
                 }
 
                 let baryValue = weightedConnections / totalConnections;
-                // if (mutate) {
-                //     baryValue += Math.random() - 0.5;
-                // }
+                if (mutate) {
+                    baryValue += Math.random() * 0.1;
+                }
 
                 barycenters.push({ chromosome, value: baryValue });
             }
@@ -105,13 +103,11 @@ export function barycenterChromosomeOrder(
             }
         }
     }
+    console.log("barycenter iterations", iteration);
 
     return result;
 }
 
-/**
- * Helper function to find which organism a chromosome belongs to
- */
 function getOrganismForChromosome(
     chromosome: string,
     ribbonData: IRibbonData
@@ -124,9 +120,6 @@ function getOrganismForChromosome(
     return "";
 }
 
-/**
- * Helper function to check if two arrays have the same elements in the same order
- */
 function areArraysEqual(arr1: string[], arr2: string[]): boolean {
     if (arr1.length !== arr2.length) return false;
     for (let i = 0; i < arr1.length; i++) {

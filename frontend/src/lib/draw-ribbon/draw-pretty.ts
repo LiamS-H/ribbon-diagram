@@ -26,23 +26,7 @@ function drawHorizontalBezier(
 
     ctx.stroke();
 }
-export function DrawPretty(
-    canvas: HTMLCanvasElement,
-    data: IRibbonData,
-    map: IConnectionMap
-) {
-    const orgStrandCount: Record<string, number> = {};
-
-    for (const org of data.organisms) {
-        orgStrandCount[org] = 0;
-        for (const chromosome of data.orgMap[org].chromosomes) {
-            const m = map.map[chromosome];
-            if (!m) continue;
-            orgStrandCount[org] += m.total;
-        }
-    }
-    console.log(orgStrandCount);
-
+export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
     canvas.height = 1000;
     canvas.width = 2000;
 
@@ -76,69 +60,68 @@ export function DrawPretty(
         const org = data.orgMap[orgname];
         let y = padding;
         for (let i = 0; i < org.chromosomes.length; i++) {
-            const chrome = org.chromosomes[i];
-            const chromeMap = map.map[chrome];
-            if (!chromeMap) {
-                console.log(chrome);
+            const chromeId = org.chromosomes[i];
+            const chrome = org.chromosomeMap[chromeId];
+            if (!chrome) {
+                console.log("couldn't find", chromeId);
                 continue;
             }
-            const strands = chromeMap.total;
             const node_height =
-                (strands / orgStrandCount[orgname]) *
-                (height - org.chromosomes.length * column_node_vspacing);
+                (chrome.uniqueStrands / org.uniqueStrands) *
+                (height - (org.chromosomes.length - 1) * column_node_vspacing);
 
-            nodeYChoords[chrome] = {
+            nodeYChoords[chromeId] = {
                 y,
                 h: node_height,
             };
             y += node_height + column_node_vspacing;
         }
     }
-    const chromeStrandCount: Record<string, number> = {};
+    const chromeStrandCount: Record<string, { in: number; out: number }> = {};
 
     for (const orgId of data.organisms) {
         const org = data.orgMap[orgId];
         for (const chrom of org.chromosomes) {
-            chromeStrandCount[chrom] = 0;
+            chromeStrandCount[chrom] = { in: 0, out: 0 };
         }
     }
 
     for (const { connections } of data.ribons) {
-        let srcPos: null | {
-            x0: number;
-            y0: number;
-        } = null;
-        let src: null | string = null;
-        for (const {
-            chromosome,
-            organismId,
-            syntenyGroup,
-            startIndex,
-            endIndex,
-        } of connections) {
-            const x = data.organisms.indexOf(organismId);
-            const x1 = padding + x * column_width + column_node_width;
-            const max_connections = map.map[chromosome].total ?? 0;
-            const connections = (chromeStrandCount[chromosome] += 1);
+        const syntenyGroup = connections[0].syntenyGroup;
+        for (let i = 0; i < connections.length - 1; i++) {
+            const c0 = connections[i];
+            const c1 = connections[i + 1];
+            if (c0.chromosome === c1.chromosome) continue;
+            if (c0.organismId === c1.organismId) continue;
 
-            const y1 =
-                nodeYChoords[chromosome].y +
-                (nodeYChoords[chromosome].h * connections) / max_connections;
-            if (!srcPos || !src) {
-                srcPos = { x0: x1, y0: y1 };
-                src = chromosome;
-                continue;
+            const x0 =
+                padding +
+                data.organisms.indexOf(c0.organismId) * column_width +
+                column_node_width;
+            const x1 =
+                padding +
+                data.organisms.indexOf(c1.organismId) * column_width +
+                column_node_width;
+
+            const out_strands =
+                data.orgMap[c0.organismId].chromosomeMap[c0.chromosome]
+                    .outStrands;
+            const out_strand = (chromeStrandCount[c0.chromosome].out += 1);
+            const out_coords = nodeYChoords[c0.chromosome];
+
+            const y0 = out_coords.y + out_coords.h * (out_strand / out_strands);
+
+            const in_strands =
+                data.orgMap[c1.organismId].chromosomeMap[c1.chromosome]
+                    .inStrands;
+            const in_strand = (chromeStrandCount[c1.chromosome].in += 1);
+            const in_coords = nodeYChoords[c1.chromosome];
+
+            const y1 = in_coords.y + in_coords.h * (in_strand / in_strands);
+            if (in_strand >= in_strands - 5) {
+                console.log(in_strand / in_strands);
             }
 
-            const { x0, y0 } = srcPos;
-            srcPos = { x0: x1, y0: y1 };
-            src = chromosome;
-
-            if (x0 === x1 && y0 === y1) continue;
-            const m = map.map[chromosome]?.map[src]?.map[syntenyGroup];
-            if (!m || m < 5) {
-                continue;
-            }
             const strokeColor = getColor(syntenyGroup);
             const r = parseInt(strokeColor.slice(1, 3), 16);
             const g = parseInt(strokeColor.slice(3, 5), 16);

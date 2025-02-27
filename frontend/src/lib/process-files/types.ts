@@ -1,5 +1,3 @@
-type Chromosome = string;
-
 interface IGraphSettings {
     e_cutoff: number;
     gene_count_max: number;
@@ -8,10 +6,19 @@ interface IGraphSettings {
     min_genes_in_chromosome: number;
 }
 
+interface IChromosome {
+    inStrands: number;
+    outStrands: number;
+    uniqueStrands: number;
+}
+
 interface IOrganism {
     id: string;
     chromosomes: string[];
-    ribbonCount: { [key: Chromosome]: number };
+    chromosomeMap: { [key: string]: IChromosome };
+    inStrands: number;
+    outStrands: number;
+    uniqueStrands: number;
 }
 
 interface IConnection {
@@ -20,6 +27,8 @@ interface IConnection {
     organismId: string;
     chromosome: string;
     syntenyGroup: string;
+    isStart: boolean;
+    isEnd: boolean;
 }
 
 interface IRibbon {
@@ -64,6 +73,7 @@ type GroupsFile = {
     orgToGenes: {
         [key: string]: string[];
     };
+    organisms: string[];
 }[];
 
 type SyntenyFile = {
@@ -85,6 +95,7 @@ export type {
     IParsedFiles,
     IConnection,
     IOrganism,
+    IChromosome,
     IRibbon,
     IRibbonData,
     IConnectionMap,

@@ -8,7 +8,7 @@ import {
     Flow,
 } from "@/lib/sankey-dist/chartjs-chart-sankey.esm";
 Chart.register(SankeyController, Flow);
-import { getColor } from "./color";
+// import { getColor } from "./color";
 import { barycenterChromosomeOrder } from "./bary-center";
 import { DrawPretty } from "./draw-pretty";
 
@@ -16,7 +16,6 @@ export async function DrawRibbon(
     ribbonData: IRibbonData,
     canvas: HTMLCanvasElement
 ) {
-    const data = [];
     const ctx = canvas.getContext("2d");
     if (!ctx) {
         console.error("couldn't fetch canvas context.");
@@ -67,8 +66,6 @@ export async function DrawRibbon(
         }
     }
 
-    const min_threads = 50;
-
     const orgCount: Record<string, number> = {};
 
     for (const org of ribbonData.organisms) {
@@ -86,7 +83,11 @@ export async function DrawRibbon(
     for (const org of ribbonData.organisms) {
         ribbonData.orgMap[org].chromosomes = ordering[org];
     }
-    DrawPretty(canvas, ribbonData, map);
+    // DrawPretty(canvas, ribbonData, map);
+    DrawPretty(canvas, ribbonData);
+
+    // const min_threads = 50;
+    // const data = [];
     // for (const org of ribbonData.organisms) {
     //         for (const source of ribbonData.orgMap[org].chromosomes) {
     //             const sourceMap = map.map[source];
