@@ -43,6 +43,7 @@ interface IConnectionMap {
                 };
             };
             destinations: string[];
+            total: number;
         };
     };
     sources: string[];

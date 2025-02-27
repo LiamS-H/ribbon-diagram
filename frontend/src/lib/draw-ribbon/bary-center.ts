@@ -15,6 +15,8 @@ export function barycenterChromosomeOrder(
     let iteration = 0;
     let mutate;
 
+    const organisms = [...ribbonData.organisms];
+
     while (hasChanges && iteration < maxIterations) {
         if (!hasChanges && mutate) {
             break;
@@ -26,9 +28,9 @@ export function barycenterChromosomeOrder(
         }
         hasChanges = false;
         iteration++;
-        ribbonData.organisms.reverse();
+        organisms.reverse();
 
-        for (const currentOrg of ribbonData.organisms) {
+        for (const currentOrg of organisms) {
             if (result[currentOrg].length <= 1) continue;
 
             const barycenters: { chromosome: string; value: number }[] = [];
@@ -36,7 +38,9 @@ export function barycenterChromosomeOrder(
             for (const chromosome of result[currentOrg]) {
                 let weightedConnections = 0;
                 let totalConnections = 0;
-                const curPosition = result[currentOrg].indexOf(chromosome);
+                // const curPosition =
+                //     result[currentOrg].indexOf(chromosome) /
+                //     result[currentOrg].length;
 
                 if (connectionMap.sources.includes(chromosome)) {
                     const connections = connectionMap.map[chromosome];
@@ -49,11 +53,11 @@ export function barycenterChromosomeOrder(
 
                         const weight = connections.map[destChromosome].total;
                         const position =
-                            result[targetOrganism].indexOf(destChromosome);
+                            result[targetOrganism].indexOf(destChromosome) /
+                            result[targetOrganism].length;
 
                         if (position !== -1) {
-                            weightedConnections +=
-                                (position - curPosition) * weight;
+                            weightedConnections += position * weight;
                             totalConnections += weight;
                         }
                     }
@@ -74,20 +78,20 @@ export function barycenterChromosomeOrder(
                             connectionMap.map[sourceChromosome].map[chromosome]
                                 .total;
                         const position =
-                            result[sourceOrganism].indexOf(sourceChromosome);
+                            result[sourceOrganism].indexOf(sourceChromosome) /
+                            result[sourceOrganism].length;
 
                         if (position !== -1) {
-                            weightedConnections +=
-                                (position - curPosition) * weight;
+                            weightedConnections += position * weight;
                             totalConnections += weight;
                         }
                     }
                 }
 
                 let baryValue = weightedConnections / totalConnections;
-                if (mutate) {
-                    baryValue += Math.random() - 0.5;
-                }
+                // if (mutate) {
+                //     baryValue += Math.random() - 0.5;
+                // }
 
                 barycenters.push({ chromosome, value: baryValue });
             }

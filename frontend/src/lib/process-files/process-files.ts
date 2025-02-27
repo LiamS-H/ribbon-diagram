@@ -78,7 +78,7 @@ export function processFiles(
         if (syntenyFile[orthoGroup].postProb < settings.post_prob) continue;
         const syntenyGroup = syntenyFile[orthoGroup].syntenyGroup;
         const connections: IConnection[] = [];
-        for (const orgId of Object.keys(data.orgMap)) {
+        for (const orgId of data.organisms) {
             for (const gene of orgToGenes[orgId]) {
                 try {
                     const { chromosome, startIndex, endIndex } =
@@ -108,7 +108,7 @@ export function processFiles(
         })
     );
 
-    for (const orgId of Object.keys(data.orgMap)) {
+    for (const orgId of data.organisms) {
         for (const chromosome of data.orgMap[orgId].chromosomes) {
             if (deleted.has(chromosome)) continue;
             const org = data.orgMap[orgId];

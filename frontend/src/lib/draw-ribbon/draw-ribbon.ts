@@ -1,10 +1,16 @@
 import { IConnectionMap, IRibbonData } from "../process-files/types";
-import { Chart, registerables } from "chart.js";
+import { Chart, registerables, SankeyControllerDatasetOptions } from "chart.js";
 Chart.register(...registerables);
-import { SankeyController, Flow } from "chartjs-chart-sankey";
+// import { Sankey, Flow } from "../sankey-chartjs/src";
+// Chart.register(Sankey, Flow);
+import {
+    SankeyController,
+    Flow,
+} from "@/lib/sankey-dist/chartjs-chart-sankey.esm";
 Chart.register(SankeyController, Flow);
 import { getColor } from "./color";
 import { barycenterChromosomeOrder } from "./bary-center";
+import { DrawPretty } from "./draw-pretty";
 
 export async function DrawRibbon(
     ribbonData: IRibbonData,
@@ -33,7 +39,7 @@ export async function DrawRibbon(
                 continue;
             }
             if (!map.sources.includes(source)) {
-                map.map[source] = { destinations: [], map: {} };
+                map.map[source] = { destinations: [], map: {}, total: 0 };
                 map.sources.push(source);
             }
             if (!map.map[source].destinations.includes(destination)) {
@@ -50,131 +56,128 @@ export async function DrawRibbon(
             }
             map.map[source].map[destination].map[synteny] += 1;
             map.map[source].map[destination].total += 1;
+            map.map[source].total += 1;
+
+            if (!map.sources.includes(destination)) {
+                map.map[destination] = { destinations: [], map: {}, total: 0 };
+                map.sources.push(destination);
+            }
+            map.map[destination].total += 1;
             source = destination;
         }
     }
 
-    const ordering = barycenterChromosomeOrder(ribbonData, map);
-    console.log(ordering);
+    const min_threads = 50;
 
+    const orgCount: Record<string, number> = {};
+
+    for (const org of ribbonData.organisms) {
+        orgCount[org] = 0;
+        for (const chromosome of ribbonData.orgMap[org].chromosomes) {
+            const m = map.map[chromosome];
+            if (!m) continue;
+            orgCount[org] += m.total;
+        }
+    }
+    console.log(orgCount);
+
+    const ordering = barycenterChromosomeOrder(ribbonData, map);
+    console.log("ordering:", ordering);
     for (const org of ribbonData.organisms) {
         ribbonData.orgMap[org].chromosomes = ordering[org];
     }
-
-    const min_threads = 11;
-
-    const rendered = new Set<string>();
-
-    for (let i = 0; i < 100; i++) {
-        for (const org1 of ribbonData.organisms) {
-            for (const org2 of ribbonData.organisms) {
-                if (i >= ordering[org1].length) continue;
-                const source = ordering[org1][i];
-                const sourceMap = map.map[source];
-                if (!sourceMap) continue;
-
-                if (i >= ordering[org2].length) continue;
-                const destination = ordering[org2][i];
-                const destinationMap = sourceMap.map[destination];
-                if (!destinationMap) continue;
-                rendered.add(`${destination}${source}`);
-
-                for (const synteny of destinationMap.syntenies) {
-                    const count = destinationMap.map[synteny];
-                    if (count < min_threads) continue;
-                    if (source === destination) continue;
-                    data.push({
-                        source: source,
-                        destination,
-                        count,
-                        synteny,
-                    });
-                }
-            }
-        }
-    }
-    for (const org1 of ribbonData.organisms) {
-        for (const source of ordering[org1]) {
-            const sourceMap = map.map[source];
-            if (!sourceMap) continue;
-            for (const org2 of ribbonData.organisms) {
-                for (const destination of ordering[org2]) {
-                    if (rendered.has(`${destination}${source}`)) continue;
-                    const destinationMap = sourceMap.map[destination];
-                    if (!destinationMap) continue;
-                    for (const synteny of destinationMap.syntenies) {
-                        const count = destinationMap.map[synteny];
-                        if (count < min_threads) continue;
-                        if (source === destination) continue;
-                        data.push({
-                            source: source,
-                            destination,
-                            count,
-                            synteny,
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    // for (const source of map.sources) {
-    //     const sourceMap = map.map[source];
-    //     for (const destination of sourceMap.destinations) {
-    //         const destinationMap = sourceMap.map[destination];
-    //         if (rendered.has(`${destination}${source}`)) continue;
-    //         for (const synteny of destinationMap.syntenies) {
-    //             const count = destinationMap.map[synteny];
-    //             if (count < min_threads) continue;
-    //             if (source === destination) continue;
-    //             data.push({ source, destination, count, synteny });
+    DrawPretty(canvas, ribbonData, map);
+    // for (const org of ribbonData.organisms) {
+    //         for (const source of ribbonData.orgMap[org].chromosomes) {
+    //             const sourceMap = map.map[source];
+    //             if (!sourceMap) continue;
+    //             for (const destination of sourceMap.destinations) {
+    //                 const destinationMap = sourceMap.map[destination];
+    //                 for (const synteny of destinationMap.syntenies) {
+    //                     let count = destinationMap.map[synteny];
+    //                     if (count < min_threads) continue;
+    //                     if (source === destination) continue;
+    //                     data.push({
+    //                         source,
+    //                         destination,
+    //                         count,
+    //                         synteny,
+    //                     });
+    //                 }
+    //             }
     //         }
     //     }
-    // }
-    console.log(data);
+    // const column: Record<string, number> = {};
+    // const priority: Record<string, number> = {};
 
-    new Chart(ctx, {
-        type: "sankey",
-        data: {
-            datasets: [
-                {
-                    label: "Test",
-                    data,
-                    size: "max",
-                    colorFrom: (c) =>
-                        getColor(c.dataset.data[c.dataIndex].synteny),
-                    colorTo: (c) =>
-                        getColor(c.dataset.data[c.dataIndex].synteny),
-                    hoverColorFrom: (c) =>
-                        getColor(c.dataset.data[c.dataIndex].synteny),
-                    hoverColorTo: (c) =>
-                        getColor(c.dataset.data[c.dataIndex].synteny),
-                    colorMode: "gradient",
-                },
-            ],
-        },
-        options: {
-            parsing: {
-                from: "source",
-                to: "destination",
-                flow: "count",
-                group: "synteny",
-            },
-            scales: {
-                // y: {
-                //     type: "linear",
-                //     reverse: true,
-                //     offset: true,
-                //     min: 0,
-                //     max: 5200,
-                // },
-                x: {
-                    type: "linear",
-                    offset: true,
-                    min: 0,
-                    max: ribbonData.organisms.length,
-                },
-            },
-        },
-    });
+    // for (let i = 0; i < ribbonData.organisms.length; i++) {
+    //     const org = ribbonData.organisms[i];
+    //     for (let j = 0; j < ordering[org].length; j++) {
+    //         const chromosome = ordering[org][j];
+    //         column[chromosome] = i;
+    //         priority[chromosome] = j;
+    //     }
+    // }
+    // function title(
+    //     tooltipItems: [{ dataset: { data: any }; dataIndex: number }]
+    // ) {
+    //     const test = tooltipItems[0];
+    //     return test.dataset.data[test.dataIndex].synteny;
+    // }
+
+    // const options: SankeyControllerDatasetOptions = {
+    //     parsing: {
+    //         from: "source",
+    //         to: "destination",
+    //         flow: "count",
+    //         group: "synteny",
+    //     },
+    //     column,
+    //     priority,
+    //     scales: {
+    //         // y: {
+    //         //     type: "linear",
+    //         //     reverse: true,
+    //         //     offset: true,
+    //         //     min: 0,
+    //         //     max: 5200,
+    //         // },
+    //         x: {
+    //             type: "linear",
+    //             offset: true,
+    //             min: 0,
+    //             max: ribbonData.organisms.length,
+    //         },
+    //     },
+    //     plugins: {
+    //         tooltip: {
+    //             callbacks: {
+    //                 title,
+    //             },
+    //         },
+    //     },
+    // };
+
+    // new Chart(ctx, {
+    //     type: "sankey",
+    //     data: {
+    //         datasets: [
+    //             {
+    //                 label: "Test",
+    //                 data,
+    //                 size: "max",
+    //                 colorFrom: (c) =>
+    //                     getColor(c.dataset.data[c.dataIndex].synteny),
+    //                 colorTo: (c) =>
+    //                     getColor(c.dataset.data[c.dataIndex].synteny),
+    //                 hoverColorFrom: (c) =>
+    //                     getColor(c.dataset.data[c.dataIndex].synteny),
+    //                 hoverColorTo: (c) =>
+    //                     getColor(c.dataset.data[c.dataIndex].synteny),
+    //                 colorMode: "gradient",
+    //             },
+    //         ],
+    //     },
+    //     options,
+    // });
 }
