@@ -30,6 +30,16 @@ export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
     canvas.height = 1000;
     canvas.width = 2000;
 
+    for (const orgId of data.organisms) {
+        const org = data.orgMap[orgId];
+        let total = 0;
+        for (const chromeId of org.chromosomes) {
+            const chrome = org.chromosomeMap[chromeId];
+            total += chrome.uniqueStrands;
+        }
+        console.log(orgId, org.uniqueStrands, total);
+    }
+
     const ctx = canvas.getContext("2d");
     if (!ctx) {
         console.error("couldn't get canvas context.");
@@ -86,48 +96,48 @@ export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
         }
     }
 
-    for (const { connections } of data.ribons) {
-        const syntenyGroup = connections[0].syntenyGroup;
-        for (let i = 0; i < connections.length - 1; i++) {
-            const c0 = connections[i];
-            const c1 = connections[i + 1];
-            if (c0.chromosome === c1.chromosome) continue;
-            if (c0.organismId === c1.organismId) continue;
+    for (const { organisms, connectionMap, syntenyGroup } of data.ribons) {
+        for (let i = 0; i < organisms.length - 1; i++) {
+            const orgId0 = organisms[i];
+            const orgId1 = organisms[i + 1];
+            const c0 = connectionMap[orgId0];
+            const c1 = connectionMap[orgId1];
+            for (const { chromosome: ch0 } of c0) {
+                for (const { chromosome: ch1 } of c1) {
+                    const x0 =
+                        padding +
+                        data.organisms.indexOf(orgId0) * column_width +
+                        column_node_width;
+                    const x1 =
+                        padding +
+                        data.organisms.indexOf(orgId1) * column_width +
+                        column_node_width;
 
-            const x0 =
-                padding +
-                data.organisms.indexOf(c0.organismId) * column_width +
-                column_node_width;
-            const x1 =
-                padding +
-                data.organisms.indexOf(c1.organismId) * column_width +
-                column_node_width;
+                    const out_strands =
+                        data.orgMap[orgId0].chromosomeMap[ch0].outStrands;
+                    const out_strand = (chromeStrandCount[ch0].out += 1);
+                    const out_coords = nodeYChoords[ch0];
 
-            const out_strands =
-                data.orgMap[c0.organismId].chromosomeMap[c0.chromosome]
-                    .outStrands;
-            const out_strand = (chromeStrandCount[c0.chromosome].out += 1);
-            const out_coords = nodeYChoords[c0.chromosome];
+                    const y0 =
+                        out_coords.y +
+                        out_coords.h * (out_strand / out_strands);
 
-            const y0 = out_coords.y + out_coords.h * (out_strand / out_strands);
+                    const in_strands =
+                        data.orgMap[orgId1].chromosomeMap[ch1].inStrands;
+                    const in_strand = (chromeStrandCount[ch1].in += 1);
+                    const in_coords = nodeYChoords[ch1];
 
-            const in_strands =
-                data.orgMap[c1.organismId].chromosomeMap[c1.chromosome]
-                    .inStrands;
-            const in_strand = (chromeStrandCount[c1.chromosome].in += 1);
-            const in_coords = nodeYChoords[c1.chromosome];
+                    const y1 =
+                        in_coords.y + in_coords.h * (in_strand / in_strands);
 
-            const y1 = in_coords.y + in_coords.h * (in_strand / in_strands);
-            if (in_strand >= in_strands - 5) {
-                console.log(in_strand / in_strands);
+                    const strokeColor = getColor(syntenyGroup);
+                    const r = parseInt(strokeColor.slice(1, 3), 16);
+                    const g = parseInt(strokeColor.slice(3, 5), 16);
+                    const b = parseInt(strokeColor.slice(5, 7), 16);
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.1})`;
+                    drawHorizontalBezier(ctx, x0, y0, x1, y1);
+                }
             }
-
-            const strokeColor = getColor(syntenyGroup);
-            const r = parseInt(strokeColor.slice(1, 3), 16);
-            const g = parseInt(strokeColor.slice(3, 5), 16);
-            const b = parseInt(strokeColor.slice(5, 7), 16);
-            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.1})`;
-            drawHorizontalBezier(ctx, x0, y0, x1, y1);
         }
     }
 

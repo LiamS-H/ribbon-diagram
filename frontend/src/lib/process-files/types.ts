@@ -32,7 +32,9 @@ interface IConnection {
 }
 
 interface IRibbon {
-    connections: IConnection[];
+    connectionMap: { [key: string]: IConnection[] };
+    organisms: string[];
+    syntenyGroup: string;
 }
 
 interface IRibbonData {

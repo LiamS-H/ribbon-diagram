@@ -82,18 +82,20 @@ export function processFiles(
 
     let ribbons: IRibbon[] = [];
 
-    for (const { orgToGenes, orthoGroup, organisms } of groupsFile) {
+    for (const { orgToGenes, orthoGroup, organisms: orthoOrgs } of groupsFile) {
         if (syntenyFile[orthoGroup].postProb < settings.post_prob) continue;
         const syntenyGroup = syntenyFile[orthoGroup].syntenyGroup;
-        const connections: IConnection[] = [];
-        for (let i = 0; i < organisms.length; i++) {
-            const orgId = organisms[i];
+        const organisms: string[] = [];
+        const connectionMap: Record<string, IConnection[]> = {};
+        for (let i = 0; i < orthoOrgs.length; i++) {
+            const orgId = orthoOrgs[i];
+            const genes = orgToGenes[orgId];
+            if (!genes) continue;
+            const connections: IConnection[] = [];
             const isStart = i === 0;
-            const isEnd = i === organisms.length - 1;
-            // const doesContinue: boolean = data.organisms[i + 1] in orgToGenes;
-            // const hasContinued: boolean = data.organisms[i - 1] in orgToGenes;
+            const isEnd = i === orthoOrgs.length - 1;
 
-            for (const gene of orgToGenes[orgId] ?? []) {
+            for (const gene of genes) {
                 const { chromosome, startIndex, endIndex } =
                     geneToChromosome[gene];
                 connections.push({
@@ -118,17 +120,12 @@ export function processFiles(
                 data.orgMap[orgId].chromosomeMap[chromosome].uniqueStrands += 1;
                 data.orgMap[orgId].uniqueStrands += 1;
             }
-        }
-        ribbons.push({ connections });
-    }
 
-    ribbons = ribbons.filter(({ connections }) => {
-        return connections.every(({ organismId, chromosome }) => {
-            const strands =
-                data.orgMap[organismId].chromosomeMap[chromosome].uniqueStrands;
-            return strands >= settings.strand_count_min;
-        });
-    });
+            connectionMap[orgId] = connections;
+            organisms.push(orgId);
+        }
+        ribbons.push({ connectionMap, organisms, syntenyGroup });
+    }
 
     const deleted = new Set<string>();
 
@@ -147,19 +144,35 @@ export function processFiles(
             deleted.add(chromosome);
         }
     }
+    console.log(Array.from(deleted).sort());
+
     for (const orgId of data.organisms) {
         data.orgMap[orgId].chromosomes = data.orgMap[orgId].chromosomes.filter(
             (c) => !deleted.has(c)
         );
     }
+    for (let i = 0; i < ribbons.length; i++) {
+        const { organisms } = ribbons[i];
+        for (const orgId of organisms) {
+            ribbons[i].connectionMap[orgId] = ribbons[i].connectionMap[
+                orgId
+            ].filter(({ chromosome: c }) => !deleted.has(c));
+        }
+    }
+    data.ribons = ribbons;
 
-    // reset and recalc strand counts
-    for (const orgFile of orgFiles) {
+    calcStrandCounts(data);
+
+    return data;
+}
+
+export function calcStrandCounts(data: IRibbonData) {
+    for (const orgId of data.organisms) {
         const chromosomes = new Set<string>();
         const chromosomeMap: { [key: string]: IChromosome } = {};
-        for (const { chromosome } of orgFile.genes) {
+        const org = data.orgMap[orgId];
+        for (const chromosome of org.chromosomes) {
             if (chromosomes.has(chromosome)) continue;
-            if (deleted.has(chromosome)) continue;
             chromosomes.add(chromosome);
             chromosomeMap[chromosome] = {
                 inStrands: 0,
@@ -167,29 +180,34 @@ export function processFiles(
                 uniqueStrands: 0,
             };
         }
-        data.orgMap[orgFile.name].chromosomeMap = chromosomeMap;
-        data.orgMap[orgFile.name].inStrands = 0;
-    }
-    for (const { connections } of ribbons) {
-        for (const {
-            chromosome,
-            organismId: orgId,
-            isEnd,
-            isStart,
-        } of connections) {
-            if (!isEnd) {
-                data.orgMap[orgId].chromosomeMap[chromosome].outStrands += 1;
-                data.orgMap[orgId].outStrands += 1;
-            }
-            if (!isStart) {
-                data.orgMap[orgId].chromosomeMap[chromosome].inStrands += 1;
-                data.orgMap[orgId].inStrands += 1;
-            }
-            data.orgMap[orgId].chromosomeMap[chromosome].uniqueStrands += 1;
-            data.orgMap[orgId].uniqueStrands += 1;
-        }
+        data.orgMap[orgId].chromosomeMap = chromosomeMap;
+        data.orgMap[orgId].inStrands = 0;
+        data.orgMap[orgId].uniqueStrands = 0;
+        data.orgMap[orgId].outStrands = 0;
     }
 
-    data.ribons = ribbons;
-    return data;
+    for (const { organisms, connectionMap } of data.ribons) {
+        for (let i = 0; i < organisms.length - 1; i++) {
+            const orgId0 = organisms[i];
+            const orgId1 = organisms[i + 1];
+            const c0 = connectionMap[orgId0];
+            const c1 = connectionMap[orgId1];
+            for (const { chromosome: ch0 } of c0) {
+                data.orgMap[orgId0].chromosomeMap[ch0].outStrands += c1.length;
+                data.orgMap[orgId0].outStrands += c1.length;
+                if (i == 0) {
+                    data.orgMap[orgId0].chromosomeMap[ch0].uniqueStrands +=
+                        c1.length;
+                    data.orgMap[orgId0].uniqueStrands += c1.length;
+                }
+            }
+            for (const { chromosome: ch1 } of c1) {
+                data.orgMap[orgId1].chromosomeMap[ch1].inStrands += c0.length;
+                data.orgMap[orgId1].inStrands += c0.length;
+                data.orgMap[orgId1].chromosomeMap[ch1].uniqueStrands +=
+                    c0.length;
+                data.orgMap[orgId1].uniqueStrands += c0.length;
+            }
+        }
+    }
 }

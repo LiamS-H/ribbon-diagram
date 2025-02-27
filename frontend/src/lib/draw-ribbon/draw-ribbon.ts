@@ -1,21 +1,13 @@
 import { IConnectionMap, IRibbonData } from "../process-files/types";
-import { Chart, registerables, SankeyControllerDatasetOptions } from "chart.js";
-Chart.register(...registerables);
-// import { Sankey, Flow } from "../sankey-chartjs/src";
-// Chart.register(Sankey, Flow);
-import {
-    SankeyController,
-    Flow,
-} from "@/lib/sankey-dist/chartjs-chart-sankey.esm";
-Chart.register(SankeyController, Flow);
-// import { getColor } from "./color";
 import { barycenterChromosomeOrder } from "./bary-center";
 import { DrawPretty } from "./draw-pretty";
+import { calcStrandCounts } from "../process-files/process-files";
 
 export async function DrawRibbon(
     ribbonData: IRibbonData,
     canvas: HTMLCanvasElement
 ) {
+    const min_threads = 60;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
         console.error("couldn't fetch canvas context.");
@@ -27,87 +19,122 @@ export async function DrawRibbon(
         map: {},
     };
 
-    for (const { connections } of ribbonData.ribons) {
-        let source: string | null = null;
-        for (const {
-            chromosome: destination,
-            syntenyGroup: synteny,
-        } of connections) {
-            if (!source) {
-                source = destination;
+    for (const {
+        organisms,
+        connectionMap,
+        syntenyGroup: synteny,
+    } of ribbonData.ribons) {
+        for (let i = 0; i < organisms.length - 1; i++) {
+            const orgId0 = organisms[i];
+            const orgId1 = organisms[i + 1];
+            const c0 = connectionMap[orgId0];
+            const c1 = connectionMap[orgId1];
+            for (const { chromosome: source } of c0) {
+                for (const { chromosome: destination } of c1) {
+                    if (!map.sources.includes(source)) {
+                        map.map[source] = {
+                            destinations: [],
+                            map: {},
+                            total: 0,
+                        };
+                        map.sources.push(source);
+                    }
+                    if (!map.map[source].destinations.includes(destination)) {
+                        map.map[source].map[destination] = {
+                            syntenies: [],
+                            map: {},
+                            total: 0,
+                        };
+                        map.map[source].destinations.push(destination);
+                    }
+                    if (
+                        !map.map[source].map[destination].syntenies.includes(
+                            synteny
+                        )
+                    ) {
+                        map.map[source].map[destination].map[synteny] = 0;
+                        map.map[source].map[destination].syntenies.push(
+                            synteny
+                        );
+                    }
+                    map.map[source].map[destination].map[synteny] += 1;
+                    map.map[source].map[destination].total += 1;
+                    map.map[source].total += 1;
+
+                    // if (!map.sources.includes(destination)) {
+                    //     map.map[destination] = {
+                    //         destinations: [],
+                    //         map: {},
+                    //         total: 0,
+                    //     };
+                    //     map.sources.push(destination);
+                    // }
+                    // map.map[destination].total += 1;
+                }
+            }
+        }
+    }
+
+    for (let i = 0; i < ribbonData.ribons.length; i++) {
+        const { connectionMap, organisms } = ribbonData.ribons[i];
+        for (let j = 0; j < organisms.length - 1; j++) {
+            const org0 = organisms[j];
+            const org1 = organisms[j + 1];
+
+            for (const { chromosome: src } of connectionMap[org0]) {
+                ribbonData.ribons[i].connectionMap[org1] = connectionMap[
+                    org1
+                ].filter(({ chromosome: dest, syntenyGroup }) => {
+                    const destMap = map.map[src].map[dest];
+                    const count = destMap.map[syntenyGroup];
+                    return count > min_threads;
+                });
+            }
+            if (j !== 0) {
                 continue;
             }
-            if (!map.sources.includes(source)) {
-                map.map[source] = { destinations: [], map: {}, total: 0 };
-                map.sources.push(source);
+            for (const { chromosome: dest } of connectionMap[org1]) {
+                ribbonData.ribons[i].connectionMap[org0] = connectionMap[
+                    org0
+                ].filter(({ chromosome: src, syntenyGroup }) => {
+                    const destMap = map.map[src].map[dest];
+                    const count = destMap.map[syntenyGroup];
+                    return count > min_threads;
+                });
             }
-            if (!map.map[source].destinations.includes(destination)) {
-                map.map[source].map[destination] = {
-                    syntenies: [],
-                    map: {},
-                    total: 0,
-                };
-                map.map[source].destinations.push(destination);
-            }
-            if (!map.map[source].map[destination].syntenies.includes(synteny)) {
-                map.map[source].map[destination].map[synteny] = 0;
-                map.map[source].map[destination].syntenies.push(synteny);
-            }
-            map.map[source].map[destination].map[synteny] += 1;
-            map.map[source].map[destination].total += 1;
-            map.map[source].total += 1;
-
-            if (!map.sources.includes(destination)) {
-                map.map[destination] = { destinations: [], map: {}, total: 0 };
-                map.sources.push(destination);
-            }
-            map.map[destination].total += 1;
-            source = destination;
         }
     }
 
-    const orgCount: Record<string, number> = {};
-
-    for (const org of ribbonData.organisms) {
-        orgCount[org] = 0;
-        for (const chromosome of ribbonData.orgMap[org].chromosomes) {
-            const m = map.map[chromosome];
-            if (!m) continue;
-            orgCount[org] += m.total;
-        }
-    }
-    console.log(orgCount);
+    calcStrandCounts(ribbonData);
+    console.log(ribbonData);
 
     const ordering = barycenterChromosomeOrder(ribbonData, map);
-    console.log("ordering:", ordering);
-    for (const org of ribbonData.organisms) {
+    for (const org of ribbonData.organisms.reverse()) {
         ribbonData.orgMap[org].chromosomes = ordering[org];
     }
-    // DrawPretty(canvas, ribbonData, map);
     DrawPretty(canvas, ribbonData);
 
-    // const min_threads = 50;
     // const data = [];
     // for (const org of ribbonData.organisms) {
-    //         for (const source of ribbonData.orgMap[org].chromosomes) {
-    //             const sourceMap = map.map[source];
-    //             if (!sourceMap) continue;
-    //             for (const destination of sourceMap.destinations) {
-    //                 const destinationMap = sourceMap.map[destination];
-    //                 for (const synteny of destinationMap.syntenies) {
-    //                     let count = destinationMap.map[synteny];
-    //                     if (count < min_threads) continue;
-    //                     if (source === destination) continue;
-    //                     data.push({
-    //                         source,
-    //                         destination,
-    //                         count,
-    //                         synteny,
-    //                     });
-    //                 }
+    //     for (const source of ribbonData.orgMap[org].chromosomes) {
+    //         const sourceMap = map.map[source];
+    //         if (!sourceMap) continue;
+    //         for (const destination of sourceMap.destinations) {
+    //             const destinationMap = sourceMap.map[destination];
+    //             for (const synteny of destinationMap.syntenies) {
+    //                 let count = destinationMap.map[synteny];
+    //                 if (count < min_threads) continue;
+    //                 if (source === destination) continue;
+    //                 data.push({
+    //                     source,
+    //                     destination,
+    //                     count,
+    //                     synteny,
+    //                 });
     //             }
     //         }
     //     }
+    // }
     // const column: Record<string, number> = {};
     // const priority: Record<string, number> = {};
 
