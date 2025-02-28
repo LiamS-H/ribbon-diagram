@@ -1,10 +1,15 @@
-import { IConnectionMap, IRibbonData } from "../../types/graph";
+import {
+    IConnectionMap,
+    IRenderingSettings,
+    IRibbonData,
+} from "../../types/graph";
 
 export function barycenterChromosomeOrder(
     ribbonData: IRibbonData,
     connectionMap: IConnectionMap,
-    maxIterations: number = 200
-): { [key: string]: string[] } {
+    settings: IRenderingSettings,
+    abortBuffer: Int32Array<SharedArrayBuffer>
+): { [key: string]: string[] } | null {
     const result: { [key: string]: string[] } = {};
 
     for (const org of ribbonData.organisms) {
@@ -17,8 +22,8 @@ export function barycenterChromosomeOrder(
 
     const organisms = [...ribbonData.organisms];
 
-    while (iteration < maxIterations) {
-        if (!hasChanges && mutate) {
+    while (iteration < settings.barycenter_iterations_max) {
+        if (!hasChanges && (mutate || settings.deterministic_barycenter)) {
             break;
         }
         if (hasChanges) {
@@ -85,9 +90,12 @@ export function barycenterChromosomeOrder(
                         }
                     }
                 }
+                if (Atomics.load(abortBuffer, 0) === 1) {
+                    return null;
+                }
 
                 let baryValue = weightedConnections / totalConnections;
-                if (mutate) {
+                if (mutate && !settings.deterministic_barycenter) {
                     baryValue += Math.random() * 0.1;
                 }
 
@@ -103,7 +111,6 @@ export function barycenterChromosomeOrder(
             }
         }
     }
-    console.log("barycenter iterations", iteration);
 
     return result;
 }

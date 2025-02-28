@@ -8,25 +8,23 @@ import { FileInput } from "@/components/file-input";
 import {
     Sheet,
     SheetContent,
-    SheetFooter,
+    SheetDescription,
     SheetHeader,
     SheetTitle,
 } from "@/components/(ui)/sheet";
 import { File } from "lucide-react";
-import { useGraphData } from "@/hooks/use-graph-data";
 import { RibbonCanvas } from "@/components/ribbon-canvas";
 import { useGraphSettings } from "@/hooks/use-graph-settings";
-import { Card, CardContent, CardHeader } from "@/components/(ui)/card";
+import { Card, CardContent } from "@/components/(ui)/card";
+import { GraphSettings } from "@/components/graph-settings";
 
 export default function Page() {
     const { handleFileInput, bedFiles, n0File, synFile } = useFileInput();
-    const { parsingSettings, renderSettings, SettingsComp } =
-        useGraphSettings();
-
-    const { parse, ribbonData } = useGraphData(
-        [...bedFiles, n0File, synFile],
-        parsingSettings
-    );
+    const [settings, setSettings] = useGraphSettings();
+    // const { parse, ribbonData } = useGraphData(
+    //     [...bedFiles, n0File, synFile],
+    //     parsingSettings
+    // );
 
     const [filesOpen, setFilesOpen] = useState(true);
 
@@ -38,6 +36,7 @@ export default function Page() {
                         <SheetTitle className="text-3xl">
                             Upload Files
                         </SheetTitle>
+                        <SheetDescription></SheetDescription>
                     </SheetHeader>
                     <Separator />
                     <FileInput onChange={handleFileInput} />
@@ -72,36 +71,28 @@ export default function Page() {
                         ))}
                         {bedFiles.length === 0 ? <li>no .bed files</li> : null}
                     </ul>
-                    <SheetFooter>
-                        <Button
-                            disabled={
-                                !n0File || !synFile || bedFiles.length === 0
-                            }
-                            className="w-full"
-                            onClick={() => {
-                                setFilesOpen(false);
-                                parse();
-                            }}
-                        >
-                            Parse Files
-                        </Button>
-                    </SheetFooter>
                 </SheetContent>
             </Sheet>
             <Button
                 className="absolute left-4 top-4"
                 variant="outline"
                 size="icon"
-                onClick={() => setFilesOpen((o) => !o)}
+                onClick={() => setFilesOpen(true)}
             >
                 <File />
             </Button>
             <div className="flex flex-col md:flex-row gap-4 px-16 pt-4">
-                <RibbonCanvas data={ribbonData} settings={renderSettings} />
+                <RibbonCanvas
+                    files={{ bedFiles, n0File, synFile }}
+                    settings={settings}
+                />
 
-                <Card>
+                <Card className="min-w-64">
                     <CardContent>
-                        <SettingsComp />
+                        <GraphSettings
+                            setSettings={setSettings}
+                            settings={settings}
+                        />
                         <Separator />
                     </CardContent>
                 </Card>

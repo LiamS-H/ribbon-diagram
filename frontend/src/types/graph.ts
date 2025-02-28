@@ -8,11 +8,13 @@ export interface IParsingSettings {
 export interface IRenderingSettings {
     orthogroup_strand_count_min: number;
     barycenter_iterations_max: number;
+    deterministic_barycenter: boolean;
+    lock_chromosomes: boolean;
 }
 
 export interface IGraphSettings {
     parsing: IParsingSettings;
-    redering: IRenderingSettings;
+    rendering: IRenderingSettings;
 }
 
 export interface IChromosome {
@@ -49,7 +51,7 @@ export interface IRibbon {
 export interface IRibbonData {
     orgMap: { [key: string]: IOrganism };
     organisms: string[];
-    ribons: IRibbon[];
+    ribbons: IRibbon[];
 }
 
 export interface IConnectionMap {

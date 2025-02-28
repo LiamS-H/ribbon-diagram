@@ -1,14 +1,10 @@
-import {
-    IConnectionMap,
-    IRenderingSettings,
-    IRibbonData,
-} from "../../types/graph";
-import { barycenterChromosomeOrder } from "./bary-center";
+import { IConnectionMap, IRenderingSettings, IRibbonData } from "@/types/graph";
 import { calcStrandCounts } from "../process-files/process-files";
 
-export async function SolvePositioning(
+export function SolvePositioning(
     ribbonData: IRibbonData,
-    settings: IRenderingSettings
+    settings: IRenderingSettings,
+    abortBuffer: Int32Array<SharedArrayBuffer>
 ) {
     const map: IConnectionMap = {
         sources: [],
@@ -19,7 +15,7 @@ export async function SolvePositioning(
         organisms,
         connectionMap,
         syntenyGroup: synteny,
-    } of ribbonData.ribons) {
+    } of ribbonData.ribbons) {
         for (let i = 0; i < organisms.length - 1; i++) {
             const orgId0 = organisms[i];
             const orgId1 = organisms[i + 1];
@@ -59,16 +55,19 @@ export async function SolvePositioning(
                 }
             }
         }
+        if (Atomics.load(abortBuffer, 0) === 1) {
+            return null;
+        }
     }
 
-    for (let i = 0; i < ribbonData.ribons.length; i++) {
-        const { connectionMap, organisms } = ribbonData.ribons[i];
+    for (let i = 0; i < ribbonData.ribbons.length; i++) {
+        const { connectionMap, organisms } = ribbonData.ribbons[i];
         for (let j = 0; j < organisms.length - 1; j++) {
             const org0 = organisms[j];
             const org1 = organisms[j + 1];
 
             for (const { chromosome: src } of connectionMap[org0]) {
-                ribbonData.ribons[i].connectionMap[org1] = connectionMap[
+                ribbonData.ribbons[i].connectionMap[org1] = connectionMap[
                     org1
                 ].filter(({ chromosome: dest, syntenyGroup }) => {
                     const destMap = map.map[src].map[dest];
@@ -80,7 +79,7 @@ export async function SolvePositioning(
                 continue;
             }
             for (const { chromosome: dest } of connectionMap[org1]) {
-                ribbonData.ribons[i].connectionMap[org0] = connectionMap[
+                ribbonData.ribbons[i].connectionMap[org0] = connectionMap[
                     org0
                 ].filter(({ chromosome: src, syntenyGroup }) => {
                     const destMap = map.map[src].map[dest];
@@ -93,8 +92,5 @@ export async function SolvePositioning(
 
     calcStrandCounts(ribbonData);
 
-    const ordering = barycenterChromosomeOrder(ribbonData, map);
-    for (const org of ribbonData.organisms.reverse()) {
-        ribbonData.orgMap[org].chromosomes = ordering[org];
-    }
+    return { ribbonData, connectionMap: map };
 }

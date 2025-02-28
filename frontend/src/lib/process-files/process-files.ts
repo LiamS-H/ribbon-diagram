@@ -19,17 +19,12 @@ export function processFiles(
         groupsFile: GroupsFile;
         syntenyFile: SyntenyFile;
     },
-    settings: IParsingSettings = {
-        e_cutoff: 0,
-        gene_count_max: 20,
-        post_prob: 0.99,
-        chrome_strand_count_min: 20,
-        min_genes_in_chromosome: 10,
-    }
-): IRibbonData {
+    settings: IParsingSettings,
+    abortBuffer: Int32Array<SharedArrayBuffer>
+): IRibbonData | null {
     const data: IRibbonData = {
         orgMap: {},
-        ribons: [],
+        ribbons: [],
         organisms: [],
     };
     const geneToChromosome: {
@@ -44,6 +39,9 @@ export function processFiles(
     const count = new Map<string, number>();
 
     for (const orgFile of orgFiles) {
+        if (Atomics.load(abortBuffer, 0) === 1) {
+            return null;
+        }
         const chromosomes = new Set<string>();
         const chromosomeMap: { [key: string]: IChromosome } = {};
         for (const {
@@ -80,9 +78,12 @@ export function processFiles(
         data.organisms.push(orgFile.name);
     }
 
-    let ribbons: IRibbon[] = [];
+    const ribbons: IRibbon[] = [];
 
     for (const { orgToGenes, orthoGroup, organisms: orthoOrgs } of groupsFile) {
+        if (Atomics.load(abortBuffer, 0) === 1) {
+            return null;
+        }
         if (syntenyFile[orthoGroup].postProb < settings.post_prob) continue;
         const syntenyGroup = syntenyFile[orthoGroup].syntenyGroup;
         const organisms: string[] = [];
@@ -144,7 +145,6 @@ export function processFiles(
             deleted.add(chromosome);
         }
     }
-    console.log(Array.from(deleted).sort());
 
     for (const orgId of data.organisms) {
         data.orgMap[orgId].chromosomes = data.orgMap[orgId].chromosomes.filter(
@@ -159,7 +159,7 @@ export function processFiles(
             ].filter(({ chromosome: c }) => !deleted.has(c));
         }
     }
-    data.ribons = ribbons;
+    data.ribbons = ribbons;
 
     calcStrandCounts(data);
 
@@ -186,7 +186,7 @@ export function calcStrandCounts(data: IRibbonData) {
         data.orgMap[orgId].outStrands = 0;
     }
 
-    for (const { organisms, connectionMap } of data.ribons) {
+    for (const { organisms, connectionMap } of data.ribbons) {
         for (let i = 0; i < organisms.length - 1; i++) {
             const orgId0 = organisms[i];
             const orgId1 = organisms[i + 1];

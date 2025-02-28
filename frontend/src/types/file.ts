@@ -2,6 +2,13 @@ export interface IFile {
     file: File;
     type: "bed" | "n0" | "synteny";
 }
+
+export interface IRawFiles {
+    bedFiles: IFile[];
+    n0File: IFile | null;
+    synFile: IFile | null;
+}
+
 export interface IParsedFiles {
     orgFiles: OrgFile[];
     groupsFile: GroupsFile;

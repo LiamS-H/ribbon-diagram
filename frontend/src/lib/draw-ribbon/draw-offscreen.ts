@@ -1,7 +1,8 @@
-import { IConnectionMap, IRibbonData } from "../../types/graph";
+import { IRenderingSettings, IRibbonData } from "@/types/graph";
 import { getColor } from "./color";
+
 function drawHorizontalBezier(
-    ctx: CanvasRenderingContext2D,
+    ctx: OffscreenCanvasRenderingContext2D,
     startX: number,
     startY: number,
     endX: number,
@@ -26,19 +27,15 @@ function drawHorizontalBezier(
 
     ctx.stroke();
 }
-export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
+
+export function DrawOffscreen(
+    canvas: OffscreenCanvas,
+    data: IRibbonData,
+    setttings: IRenderingSettings,
+    abortBuffer: Int32Array<SharedArrayBuffer>
+) {
     canvas.height = 1000;
     canvas.width = 2000;
-
-    for (const orgId of data.organisms) {
-        const org = data.orgMap[orgId];
-        let total = 0;
-        for (const chromeId of org.chromosomes) {
-            const chrome = org.chromosomeMap[chromeId];
-            total += chrome.uniqueStrands;
-        }
-        console.log(orgId, org.uniqueStrands, total);
-    }
 
     const ctx = canvas.getContext("2d");
     if (!ctx) {
@@ -57,10 +54,13 @@ export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
     const column_node_width = 10;
     const column_width =
         (width - column_node_width - label_width) / (columns - 1);
-    const column_spacing = column_width - column_node_width;
+    // const column_spacing = column_width - column_node_width;
     const column_node_vspacing = 5;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function clear() {
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    clear();
 
     const nodeYChoords: Record<string, { y: number; h: number }> = {};
 
@@ -73,7 +73,6 @@ export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
             const chromeId = org.chromosomes[i];
             const chrome = org.chromosomeMap[chromeId];
             if (!chrome) {
-                console.log("couldn't find", chromeId);
                 continue;
             }
             const node_height =
@@ -96,8 +95,13 @@ export function DrawPretty(canvas: HTMLCanvasElement, data: IRibbonData) {
         }
     }
 
-    for (const { organisms, connectionMap, syntenyGroup } of data.ribons) {
+    for (const { organisms, connectionMap, syntenyGroup } of data.ribbons) {
         for (let i = 0; i < organisms.length - 1; i++) {
+            if (Atomics.load(abortBuffer, 0) === 1) {
+                // clear();
+                return;
+            }
+
             const orgId0 = organisms[i];
             const orgId1 = organisms[i + 1];
             const c0 = connectionMap[orgId0];
