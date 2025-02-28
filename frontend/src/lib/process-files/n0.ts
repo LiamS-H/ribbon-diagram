@@ -1,5 +1,5 @@
 import { parseAsStream } from "./parse-stream";
-import { GroupsFile } from "./types";
+import { GroupsFile } from "@/types/file";
 
 export async function parseN0AsStream(file: File): Promise<GroupsFile> {
     const result: GroupsFile = [];

@@ -1,4 +1,4 @@
-import { IConnectionMap, IRibbonData } from "../process-files/types";
+import { IConnectionMap, IRibbonData } from "../../types/graph";
 import { getColor } from "./color";
 function drawHorizontalBezier(
     ctx: CanvasRenderingContext2D,

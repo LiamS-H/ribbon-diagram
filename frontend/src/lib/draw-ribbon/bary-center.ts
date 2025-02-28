@@ -1,4 +1,4 @@
-import { IConnectionMap, IRibbonData } from "../process-files/types";
+import { IConnectionMap, IRibbonData } from "../../types/graph";
 
 export function barycenterChromosomeOrder(
     ribbonData: IRibbonData,

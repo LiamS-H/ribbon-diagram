@@ -1,7 +1,7 @@
 import { parseBedAsStream } from "./bed";
 import { parseN0AsStream } from "./n0";
 import { parseSyntenyAsStream } from "./synteny";
-import { IParsedFiles } from "./types";
+import { IParsedFiles } from "@/types/file";
 
 export async function parseFiles({
     n0,

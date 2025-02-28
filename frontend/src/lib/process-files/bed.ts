@@ -1,5 +1,5 @@
 import { parseAsStream } from "./parse-stream";
-import { OrgFile } from "./types";
+import { OrgFile } from "@/types/file";
 
 export async function parseBedAsStream(file: File): Promise<OrgFile> {
     const result: OrgFile = {

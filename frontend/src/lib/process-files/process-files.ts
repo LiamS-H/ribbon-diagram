@@ -2,12 +2,12 @@ import {
     IRibbon,
     IConnection,
     IRibbonData,
-    OrgFile,
-    GroupsFile,
-    SyntenyFile,
-    IGraphSettings,
+    IParsingSettings,
     IChromosome,
-} from "./types";
+} from "../../types/graph";
+import { OrgFile } from "@/types/file";
+import { GroupsFile } from "@/types/file";
+import { SyntenyFile } from "@/types/file";
 
 export function processFiles(
     {
@@ -19,11 +19,11 @@ export function processFiles(
         groupsFile: GroupsFile;
         syntenyFile: SyntenyFile;
     },
-    settings: IGraphSettings = {
+    settings: IParsingSettings = {
         e_cutoff: 0,
         gene_count_max: 20,
         post_prob: 0.99,
-        strand_count_min: 20,
+        chrome_strand_count_min: 20,
         min_genes_in_chromosome: 10,
     }
 ): IRibbonData {
@@ -135,7 +135,7 @@ export function processFiles(
             const org = data.orgMap[orgId];
             if (
                 org.chromosomeMap[chromosome].uniqueStrands >=
-                settings.strand_count_min
+                settings.chrome_strand_count_min
             ) {
                 continue;
             }

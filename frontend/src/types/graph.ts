@@ -1,18 +1,27 @@
-interface IGraphSettings {
-    e_cutoff: number;
-    gene_count_max: number;
+export interface IParsingSettings {
+    e_cutoff: number; //idk
+    gene_count_max: number; //idk
     post_prob: number;
-    strand_count_min: number;
+    chrome_strand_count_min: number;
     min_genes_in_chromosome: number;
 }
+export interface IRenderingSettings {
+    orthogroup_strand_count_min: number;
+    barycenter_iterations_max: number;
+}
 
-interface IChromosome {
+export interface IGraphSettings {
+    parsing: IParsingSettings;
+    redering: IRenderingSettings;
+}
+
+export interface IChromosome {
     inStrands: number;
     outStrands: number;
     uniqueStrands: number;
 }
 
-interface IOrganism {
+export interface IOrganism {
     id: string;
     chromosomes: string[];
     chromosomeMap: { [key: string]: IChromosome };
@@ -21,7 +30,7 @@ interface IOrganism {
     uniqueStrands: number;
 }
 
-interface IConnection {
+export interface IConnection {
     startIndex: number;
     endIndex: number;
     organismId: string;
@@ -31,19 +40,19 @@ interface IConnection {
     isEnd: boolean;
 }
 
-interface IRibbon {
+export interface IRibbon {
     connectionMap: { [key: string]: IConnection[] };
     organisms: string[];
     syntenyGroup: string;
 }
 
-interface IRibbonData {
+export interface IRibbonData {
     orgMap: { [key: string]: IOrganism };
     organisms: string[];
     ribons: IRibbon[];
 }
 
-interface IConnectionMap {
+export interface IConnectionMap {
     map: {
         [key: string]: {
             map: {
@@ -59,49 +68,3 @@ interface IConnectionMap {
     };
     sources: string[];
 }
-
-interface OrgFile {
-    genes: {
-        chromosome: string; // blah1
-        startIndex: number;
-        endIndex: number;
-        gene: string; // blah1|1.1
-    }[];
-    name: string;
-}
-
-type GroupsFile = {
-    orthoGroup: string;
-    orgToGenes: {
-        [key: string]: string[];
-    };
-    organisms: string[];
-}[];
-
-type SyntenyFile = {
-    [key: string]: {
-        orthoGroup: string;
-        syntenyGroup: string;
-        postProb: number;
-    };
-};
-
-interface IParsedFiles {
-    orgFiles: OrgFile[];
-    groupsFile: GroupsFile;
-    syntenyFile: SyntenyFile;
-}
-
-export type {
-    IGraphSettings,
-    IParsedFiles,
-    IConnection,
-    IOrganism,
-    IChromosome,
-    IRibbon,
-    IRibbonData,
-    IConnectionMap,
-    OrgFile,
-    GroupsFile,
-    SyntenyFile,
-};
