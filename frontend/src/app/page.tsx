@@ -16,7 +16,7 @@ import { File } from "lucide-react";
 import { useGraphData } from "@/hooks/use-graph-data";
 import { RibbonCanvas } from "@/components/ribbon-canvas";
 import { useGraphSettings } from "@/hooks/use-graph-settings";
-import { GraphSettings } from "@/components/graph-settings";
+import { Card, CardContent, CardHeader } from "@/components/(ui)/card";
 
 export default function Page() {
     const { handleFileInput, bedFiles, n0File, synFile } = useFileInput();
@@ -98,7 +98,13 @@ export default function Page() {
             </Button>
             <div className="flex flex-col md:flex-row gap-4 px-16 pt-4">
                 <RibbonCanvas data={ribbonData} settings={renderSettings} />
-                <SettingsComp />
+
+                <Card>
+                    <CardContent>
+                        <SettingsComp />
+                        <Separator />
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

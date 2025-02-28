@@ -13,7 +13,7 @@ export function useGraphSettings() {
             barycenter_iterations_max: 50,
         })
     );
-    const [parsingSettings, seParsingSettings] = useState<IParsingSettings>(
+    const [parsingSettings, setParsingSettings] = useState<IParsingSettings>(
         () => ({
             e_cutoff: 0,
             gene_count_max: 20,
@@ -22,7 +22,14 @@ export function useGraphSettings() {
             min_genes_in_chromosome: 10,
         })
     );
-    function setSettings(s: IGraphSettings) {}
+    function setSettings(s: Partial<IGraphSettings>) {
+        if (s.parsing) {
+            setParsingSettings(s.parsing);
+        }
+        if (s.redering) {
+            setRenderSettings(s.redering);
+        }
+    }
 
     const SettingsComp = () => {
         return (
