@@ -23,7 +23,7 @@ export function useRibbonWorkerClient(
         if (!n0File) {
             missing_file_types.push("N0");
         }
-        if (!bedFiles) {
+        if (bedFiles.length === 0) {
             missing_file_types.push("bed");
         }
         if (!synFile) {
