@@ -81,7 +81,7 @@ export default function Page() {
             >
                 <File />
             </Button>
-            <div className="flex flex-col md:flex-row gap-4 px-16 pt-4">
+            <div className="flex flex-col lg:flex-row gap-4 px-16 pt-4">
                 <RibbonCanvas
                     files={{ bedFiles, n0File, synFile }}
                     settings={settings}
