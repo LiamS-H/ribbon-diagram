@@ -4,8 +4,9 @@ import { OrgFile } from "@/types/file";
 export async function parseBedAsStream(file: File): Promise<OrgFile> {
     const result: OrgFile = {
         genes: [],
-        name: file.name.replace(".bed", ""),
+        name: "_",
     };
+    result.name ??= file.name;
 
     await parseAsStream(file, (line) => processLine(line, result));
 
@@ -20,6 +21,9 @@ function processLine(line: string, result: OrgFile): void {
 
     if (match) {
         const [, chromosome, startIndexStr, endIndexStr, gene] = match;
+        if (result.name === "_") {
+            result.name = gene.split("|")[0];
+        }
 
         const startIndex = parseInt(startIndexStr, 10);
         const endIndex = parseInt(endIndexStr, 10);

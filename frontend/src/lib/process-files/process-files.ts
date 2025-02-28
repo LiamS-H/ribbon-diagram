@@ -84,6 +84,10 @@ export function processFiles(
         if (Atomics.load(abortBuffer, 0) === 1) {
             return null;
         }
+        if (!syntenyFile[orthoGroup]) {
+            console.error("couldn't find orthogroup", orthoGroup);
+            continue;
+        }
         if (syntenyFile[orthoGroup].postProb < settings.post_prob) continue;
         const syntenyGroup = syntenyFile[orthoGroup].syntenyGroup;
         const organisms: string[] = [];
@@ -97,6 +101,10 @@ export function processFiles(
             const isEnd = i === orthoOrgs.length - 1;
 
             for (const gene of genes) {
+                if (!geneToChromosome[gene]) {
+                    console.error(`couldn't map gene:${gene} to a chromosome.`);
+                    continue;
+                }
                 const { chromosome, startIndex, endIndex } =
                     geneToChromosome[gene];
                 connections.push({
@@ -108,6 +116,12 @@ export function processFiles(
                     isEnd,
                     isStart,
                 });
+                if (!data.orgMap[orgId].chromosomeMap[chromosome]) {
+                    console.error(
+                        `A connection in N0 mapped ${gene} to ${chromosome} to, but ${chromosome} is missing from ${orgId}.`
+                    );
+                    continue;
+                }
                 if (!isEnd) {
                     data.orgMap[orgId].chromosomeMap[
                         chromosome

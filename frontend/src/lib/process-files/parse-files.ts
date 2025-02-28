@@ -24,5 +24,7 @@ export async function parseFiles({
         parseSyntenyAsStream(synteny.file),
     ] as const;
     const [orgFiles, groupsFile, syntenyFile] = await Promise.all(promises);
-    return { orgFiles, groupsFile, syntenyFile };
+    const files = { orgFiles, groupsFile, syntenyFile, organisms: [] };
+    console.log(files);
+    return files;
 }

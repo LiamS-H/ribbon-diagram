@@ -22,10 +22,7 @@ export async function parseN0AsStream(file: File): Promise<GroupsFile> {
         const organisms: string[] = [];
 
         for (let i = 1; i < headers.length; i++) {
-            const orgName = headers[i];
             const genesStr = fields[i]?.trim();
-
-            orgToGenes[orgName] = [];
 
             if (!genesStr) continue;
 
@@ -33,6 +30,9 @@ export async function parseN0AsStream(file: File): Promise<GroupsFile> {
                 .split(",")
                 .map((gene) => gene.trim())
                 .filter((gene) => gene.length > 0);
+
+            const orgName = headers[i];
+            orgToGenes[orgName] = [];
 
             orgToGenes[orgName] = genes;
             organisms.push(orgName);
