@@ -1,4 +1,5 @@
 export interface IFile {
+    name: string;
     file: File;
     type: "bed" | "n0" | "synteny";
 }

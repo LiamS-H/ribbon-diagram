@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/(ui)/button";
 import { FileThumbnail } from "@/components/file-thumbnail";
 import { useFileInput } from "@/hooks/use-file-input";
@@ -17,16 +17,38 @@ import { RibbonCanvas } from "@/components/ribbon-canvas";
 import { useGraphSettings } from "@/hooks/use-graph-settings";
 import { Card, CardContent } from "@/components/(ui)/card";
 import { GraphSettings } from "@/components/graph-settings";
+import {
+    DragDropContext,
+    Droppable,
+    Draggable,
+    OnDragEndResponder,
+} from "@hello-pangea/dnd";
 
 export default function Page() {
     const { handleFileInput, bedFiles, n0File, synFile } = useFileInput();
     const [settings, setSettings] = useGraphSettings();
-    // const { parse, ribbonData } = useGraphData(
-    //     [...bedFiles, n0File, synFile],
-    //     parsingSettings
-    // );
-
     const [filesOpen, setFilesOpen] = useState(true);
+
+    const [bedFilesOrder, setBedFilesOrder] = useState<number[]>([]);
+
+    useEffect(() => {
+        setBedFilesOrder(bedFiles.map((_, index) => index));
+    }, [bedFiles.length]);
+
+    const handleDragEnd: OnDragEndResponder = (result) => {
+        if (!result.destination) return;
+
+        const newOrder = Array.from(bedFilesOrder);
+        const [movedItem] = newOrder.splice(result.source.index, 1);
+        newOrder.splice(result.destination.index, 0, movedItem);
+
+        setBedFilesOrder(newOrder);
+    };
+
+    const orderedBedFiles = useMemo(
+        () => bedFilesOrder.map((index) => bedFiles[index]),
+        [bedFilesOrder, bedFiles]
+    );
 
     return (
         <>
@@ -54,7 +76,6 @@ export default function Page() {
                                 file={n0File}
                             />
                         )}
-
                         {!n0File && !synFile ? (
                             <span>no hmm files</span>
                         ) : (
@@ -65,12 +86,50 @@ export default function Page() {
                         )}
                     </ul>
                     <Separator />
-                    <ul className="flex flex-col gap-2">
-                        {bedFiles.map((file) => (
-                            <FileThumbnail key={file.file.name} file={file} />
-                        ))}
-                        {bedFiles.length === 0 ? <li>no .bed files</li> : null}
-                    </ul>
+
+                    {/* Drag and drop for bed files */}
+                    {bedFiles.length === 0 ? (
+                        <p>no .bed files</p>
+                    ) : (
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="bedFilesList">
+                                {(provided) => (
+                                    <ul
+                                        className="flex flex-col"
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
+                                    >
+                                        {orderedBedFiles.map((file, index) => {
+                                            if (!file) return null;
+                                            return (
+                                                <Draggable
+                                                    key={file.file.name}
+                                                    draggableId={file.file.name}
+                                                    index={index}
+                                                >
+                                                    {(provided) => (
+                                                        <li
+                                                            className="my-2"
+                                                            ref={
+                                                                provided.innerRef
+                                                            }
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                        >
+                                                            <FileThumbnail
+                                                                file={file}
+                                                            />
+                                                        </li>
+                                                    )}
+                                                </Draggable>
+                                            );
+                                        })}
+                                        {provided.placeholder}
+                                    </ul>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    )}
                 </SheetContent>
             </Sheet>
             <Button
@@ -83,10 +142,13 @@ export default function Page() {
             </Button>
             <div className="flex flex-col lg:flex-row gap-4 px-16 pt-4">
                 <RibbonCanvas
-                    files={{ bedFiles, n0File, synFile }}
+                    files={{
+                        bedFiles: orderedBedFiles,
+                        n0File,
+                        synFile,
+                    }}
                     settings={settings}
                 />
-
                 <Card className="min-w-64">
                     <CardContent>
                         <GraphSettings
