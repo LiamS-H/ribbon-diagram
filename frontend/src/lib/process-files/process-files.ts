@@ -28,6 +28,7 @@ export function processFiles(
     } = {};
 
     const count = new Map<string, number>();
+    console.log(orgFiles);
 
     for (const orgFile of orgFiles) {
         if (Atomics.load(abortBuffer, 0) === 1) {

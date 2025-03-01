@@ -1,7 +1,7 @@
 import { parseAsStream } from "./parse-stream";
-import { SyntenyFile } from "@/types/file";
+import { IFile, SyntenyFile } from "@/types/file";
 
-export async function parseSyntenyAsStream(file: File): Promise<SyntenyFile> {
+export async function parseSyntenyAsStream(file: IFile): Promise<SyntenyFile> {
     const result: SyntenyFile = {};
     let isFirstLine = true;
 

@@ -1,12 +1,12 @@
 import { parseAsStream } from "./parse-stream";
-import { OrgFile } from "@/types/file";
+import { IFile, OrgFile } from "@/types/file";
 
-export async function parseBedAsStream(file: File): Promise<OrgFile> {
+export async function parseBedAsStream(file: IFile): Promise<OrgFile> {
     const result: OrgFile = {
         genes: [],
         name: "_",
     };
-    result.name ??= file.name;
+    result.name = result.name === "_" ? file.name : result.name;
 
     await parseAsStream(file, (line) => processLine(line, result));
 
@@ -21,7 +21,7 @@ function processLine(line: string, result: OrgFile): void {
 
     if (match) {
         const [, chromosome, startIndexStr, endIndexStr, gene] = match;
-        if (result.name === "_") {
+        if (result.name === "_" && /^\w*\|[0-9]+\.[0-9]+$/.test(gene)) {
             result.name = gene.split("|")[0];
         }
 

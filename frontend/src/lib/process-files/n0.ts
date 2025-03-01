@@ -1,7 +1,7 @@
 import { parseAsStream } from "./parse-stream";
-import { GroupsFile } from "@/types/file";
+import { GroupsFile, IFile } from "@/types/file";
 
-export async function parseN0AsStream(file: File): Promise<GroupsFile> {
+export async function parseN0AsStream(file: IFile): Promise<GroupsFile> {
     const result: GroupsFile = [];
     let headers: string[] = [];
     let isFirstLine = true;

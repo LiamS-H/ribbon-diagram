@@ -1,5 +1,7 @@
+import { IFile } from "@/types/file";
+
 export async function parseAsStream(
-    file: File,
+    { file }: IFile,
     parseLine: (line: string) => void
 ): Promise<void> {
     const stream = file.stream();
