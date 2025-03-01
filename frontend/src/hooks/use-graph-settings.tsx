@@ -8,6 +8,7 @@ export function useGraphSettings() {
             barycenter_iterations_max: 50,
             deterministic_barycenter: false,
             lock_chromosomes: false,
+            horizontal: false,
         },
         parsing: {
             e_cutoff: 0,

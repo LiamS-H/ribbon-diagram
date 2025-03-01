@@ -182,6 +182,25 @@ export function GraphSettings({
                         />
                     </div>
                 </li>
+                <li>
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="orientation">vertical</Label>
+                        <Switch
+                            id="orientation"
+                            checked={settings.rendering.horizontal}
+                            onCheckedChange={(c) => {
+                                setSettings({
+                                    ...settings,
+                                    rendering: {
+                                        ...settings.rendering,
+                                        horizontal: c,
+                                    },
+                                });
+                            }}
+                        />
+                        <Label htmlFor="orientation">horizontal</Label>
+                    </div>
+                </li>
             </ul>
         </>
     );

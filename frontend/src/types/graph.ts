@@ -10,6 +10,7 @@ export interface IRenderingSettings {
     barycenter_iterations_max: number;
     deterministic_barycenter: boolean;
     lock_chromosomes: boolean;
+    horizontal: boolean;
 }
 
 export interface IGraphSettings {
