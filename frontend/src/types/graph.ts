@@ -52,6 +52,7 @@ export interface IRibbonData {
     orgMap: { [key: string]: IOrganism };
     organisms: string[];
     ribbons: IRibbon[];
+    colorMap: Record<string, string>;
 }
 
 export interface IConnectionMap {

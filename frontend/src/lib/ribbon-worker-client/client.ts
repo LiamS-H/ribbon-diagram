@@ -1,4 +1,4 @@
-import { IParsedFiles } from "@/types/file";
+import { IProcessedFiles } from "@/types/file";
 import {
     IGraphSettings,
     IParsingSettings,
@@ -17,7 +17,7 @@ import {
 
 export class RibbonWorkerClient {
     private files: IParseMessage["files"] | null;
-    private parsedFiles: IParsedFiles | null;
+    private parsedFiles: IProcessedFiles | null;
     private ribbonData: IRibbonData | null;
     private fullRibbonData: IRibbonData | null;
     private settings: IGraphSettings;

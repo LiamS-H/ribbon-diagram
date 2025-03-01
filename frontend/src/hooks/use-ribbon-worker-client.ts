@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 export function useRibbonWorkerClient(
     canvas: HTMLCanvasElement | null,
-    { n0File, bedFiles, synFile }: IRawFiles,
+    { n0File, bedFiles, synFile, colorFile }: IRawFiles,
     settings: IGraphSettings
 ) {
     const client = useRef<null | RibbonWorkerClient>(null);
@@ -29,11 +29,14 @@ export function useRibbonWorkerClient(
         if (!synFile) {
             missing_file_types.push("synteny");
         }
-        if (!n0File || !bedFiles || !synFile) {
+        if (!colorFile) {
+            missing_file_types.push("colors");
+        }
+        if (!n0File || !bedFiles || !synFile || !colorFile) {
             toast(`Missing files: ${missing_file_types.join(", ")}`);
             return;
         }
-        client.current.parse({ n0: n0File, beds: bedFiles, synteny: synFile });
+        client.current.parse({ n0File, bedFiles, synFile, colorFile });
     }, [n0File, bedFiles, synFile]);
 
     useEffect(() => {

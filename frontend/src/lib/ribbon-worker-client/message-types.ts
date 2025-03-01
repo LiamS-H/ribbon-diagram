@@ -1,4 +1,4 @@
-import { IFile, IParsedFiles } from "@/types/file";
+import { IFile, IParsedFiles, IProcessedFiles } from "@/types/file";
 import {
     IParsingSettings,
     IRenderingSettings,
@@ -7,15 +7,15 @@ import {
 
 export interface IParseMessage {
     type: "parse";
-    files: { n0: IFile; beds: IFile[]; synteny: IFile };
-    parsed: IParsedFiles | null;
+    files: IParsedFiles;
+    parsed: IProcessedFiles | null;
     abortBuffer: Int32Array<SharedArrayBuffer>;
     settings: IParsingSettings;
 }
 
 export interface IParseResponse {
     type: "parse";
-    files: IParsedFiles;
+    files: IProcessedFiles;
     data: IRibbonData;
 }
 

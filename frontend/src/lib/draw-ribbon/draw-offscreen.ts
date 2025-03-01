@@ -134,7 +134,8 @@ export function DrawOffscreen(
                     const y1 =
                         in_coords.y + in_coords.h * (in_strand / in_strands);
 
-                    const strokeColor = getColor(syntenyGroup);
+                    const strokeColor =
+                        data.colorMap[syntenyGroup.toUpperCase()] || "#333333";
                     const r = parseInt(strokeColor.slice(1, 3), 16);
                     const g = parseInt(strokeColor.slice(3, 5), 16);
                     const b = parseInt(strokeColor.slice(5, 7), 16);

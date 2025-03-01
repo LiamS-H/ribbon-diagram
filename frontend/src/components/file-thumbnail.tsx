@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Dna, FileClock, Shell } from "lucide-react";
+import { Dna, File, FileClock, Palette, Shell } from "lucide-react";
 import { IFile } from "@/types/file";
 
 export function FileThumbnail({ file: { file, type } }: { file: IFile }) {
@@ -14,6 +14,11 @@ export function FileThumbnail({ file: { file, type } }: { file: IFile }) {
         case "synteny":
             icon = <Dna />;
             break;
+        case "color":
+            icon = <Palette />;
+            break;
+        default:
+            icon = <File />;
     }
     return (
         <div className="flex p-2 justify-between bg-primary shadow-lg rounded-md text-primary-foreground">

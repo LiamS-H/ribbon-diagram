@@ -25,7 +25,8 @@ import {
 } from "@hello-pangea/dnd";
 
 export default function Page() {
-    const { handleFileInput, bedFiles, n0File, synFile } = useFileInput();
+    const { handleFileInput, bedFiles, n0File, synFile, colorFile } =
+        useFileInput();
     const [settings, setSettings] = useGraphSettings();
     const [filesOpen, setFilesOpen] = useState(true);
 
@@ -80,11 +81,16 @@ export default function Page() {
                             <span>no hmm files</span>
                         ) : (
                             <>
-                                {!n0File ? <span>no n0 file</span> : null}
+                                {!n0File ? <p>no n0 file</p> : null}
                                 {!synFile ? <p>no synteny file</p> : null}
                             </>
                         )}
                     </ul>
+                    <Separator />
+                    {colorFile && (
+                        <FileThumbnail key={colorFile.name} file={colorFile} />
+                    )}
+                    {!colorFile && <p>no color file</p>}
                     <Separator />
 
                     {/* Drag and drop for bed files */}
@@ -140,12 +146,14 @@ export default function Page() {
             >
                 <File />
             </Button>
+
             <div className="flex flex-col lg:flex-row gap-4 px-16 pt-4">
                 <RibbonCanvas
                     files={{
                         bedFiles: orderedBedFiles,
                         n0File,
                         synFile,
+                        colorFile,
                     }}
                     settings={settings}
                 />

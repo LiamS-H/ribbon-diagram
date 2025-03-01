@@ -1,11 +1,14 @@
 "use client";
 import { type ChangeEvent, useState } from "react";
-import { IFile } from "@/types/file";
+import { IFile, IRawFiles } from "@/types/file";
 
-export function useFileInput() {
+export function useFileInput(): IRawFiles & {
+    handleFileInput: (e: ChangeEvent<HTMLInputElement>) => void;
+} {
     const [bedFiles, setBedFiles] = useState<IFile[]>([]);
     const [n0File, setn0File] = useState<IFile | null>(null);
     const [synFile, setSynFile] = useState<IFile | null>(null);
+    const [colorFile, setColorFile] = useState<IFile | null>(null);
 
     function handleFileInput(e: ChangeEvent<HTMLInputElement>) {
         if (!e.target.files) {
@@ -19,12 +22,22 @@ export function useFileInput() {
                     type: "bed",
                     name: file.name.slice(0, -4),
                 });
+                continue;
+            }
+            if (file.name.endsWith(".txt")) {
+                setColorFile({
+                    file,
+                    type: "color",
+                    name: file.name.slice(0, -4),
+                });
+                continue;
             }
             if (!file.name.endsWith(".tsv")) {
                 continue;
             }
             if (file.name.toLowerCase() == "n0.tsv") {
                 setn0File({ file, type: "n0", name: file.name.slice(0, -4) });
+                continue;
             }
             if (file.name.toLowerCase() == "synteny.tsv") {
                 setSynFile({
@@ -32,6 +45,7 @@ export function useFileInput() {
                     type: "synteny",
                     name: file.name.slice(0, -4),
                 });
+                continue;
             }
         }
         if (bedFiles.length === 0) {
@@ -42,6 +56,7 @@ export function useFileInput() {
 
     return {
         handleFileInput,
+        colorFile,
         bedFiles,
         n0File,
         synFile,

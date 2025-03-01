@@ -5,20 +5,12 @@ import {
     IParsingSettings,
     IChromosome,
 } from "../../types/graph";
-import { OrgFile } from "@/types/file";
+import { IProcessedFiles, OrgFile } from "@/types/file";
 import { GroupsFile } from "@/types/file";
 import { SyntenyFile } from "@/types/file";
 
 export function processFiles(
-    {
-        orgFiles,
-        groupsFile,
-        syntenyFile,
-    }: {
-        orgFiles: OrgFile[];
-        groupsFile: GroupsFile;
-        syntenyFile: SyntenyFile;
-    },
+    { orgFiles, groupsFile, syntenyFile, colorMap }: IProcessedFiles,
     settings: IParsingSettings,
     abortBuffer: Int32Array<SharedArrayBuffer>
 ): IRibbonData | null {
@@ -26,6 +18,7 @@ export function processFiles(
         orgMap: {},
         ribbons: [],
         organisms: [],
+        colorMap,
     };
     const geneToChromosome: {
         [key: string]: {
