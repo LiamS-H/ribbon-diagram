@@ -1,4 +1,4 @@
-import { IFile, IParsedFiles, IProcessedFiles } from "@/types/file";
+import { IParsedFiles, IProcessedFiles } from "@/types/file";
 import {
     IParsingSettings,
     IRenderingSettings,

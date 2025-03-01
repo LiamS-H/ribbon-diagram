@@ -5,9 +5,7 @@ import {
     IParsingSettings,
     IChromosome,
 } from "../../types/graph";
-import { IProcessedFiles, OrgFile } from "@/types/file";
-import { GroupsFile } from "@/types/file";
-import { SyntenyFile } from "@/types/file";
+import { IProcessedFiles } from "@/types/file";
 
 export function processFiles(
     { orgFiles, groupsFile, syntenyFile, colorMap }: IProcessedFiles,

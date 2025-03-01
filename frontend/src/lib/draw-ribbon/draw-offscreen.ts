@@ -1,5 +1,4 @@
 import { IRenderingSettings, IRibbonData } from "@/types/graph";
-import { getColor } from "./color";
 
 function drawHorizontalBezier(
     ctx: OffscreenCanvasRenderingContext2D,

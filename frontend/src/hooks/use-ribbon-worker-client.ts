@@ -37,7 +37,7 @@ export function useRibbonWorkerClient(
             return;
         }
         client.current.parse({ n0File, bedFiles, synFile, colorFile });
-    }, [n0File, bedFiles, synFile]);
+    }, [n0File, bedFiles, synFile, colorFile]);
 
     useEffect(() => {
         if (!client.current) return;

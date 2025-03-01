@@ -34,7 +34,7 @@ export default function Page() {
 
     useEffect(() => {
         setBedFilesOrder(bedFiles.map((_, index) => index));
-    }, [bedFiles.length]);
+    }, [bedFiles, bedFiles.length]);
 
     const handleDragEnd: OnDragEndResponder = (result) => {
         if (!result.destination) return;

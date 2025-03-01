@@ -2,7 +2,7 @@ import { parseBedAsStream } from "./bed";
 import { parseColorsAsStream } from "./color";
 import { parseN0AsStream } from "./n0";
 import { parseSyntenyAsStream } from "./synteny";
-import { IFile, IParsedFiles, IProcessedFiles } from "@/types/file";
+import { IParsedFiles, IProcessedFiles } from "@/types/file";
 
 export async function parseFiles({
     n0File: n0,
