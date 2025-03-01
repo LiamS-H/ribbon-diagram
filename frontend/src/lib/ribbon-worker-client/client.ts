@@ -26,6 +26,7 @@ export class RibbonWorkerClient {
     private renderer: Worker;
     private parser: Worker;
     private arbortBuffer: Int32Array<SharedArrayBuffer>;
+    private fileName: string | undefined;
     constructor(canvas: HTMLCanvasElement, settings: IGraphSettings) {
         this.parsedFiles = null;
         this.files = null;
@@ -73,8 +74,17 @@ export class RibbonWorkerClient {
 
     private onRender(ev: MessageEvent<IRenderResponse>) {
         this.onMessage(ev);
+        const { data } = ev;
+        const url = URL.createObjectURL(data.file);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = this.fileName || "ribbons.png";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
-    private render() {
+    private render(download: boolean = false) {
         if (!this.ribbonData) return;
         Atomics.store(this.arbortBuffer, 0, 1);
 
@@ -84,6 +94,7 @@ export class RibbonWorkerClient {
             abortBuffer: this.arbortBuffer,
             data: this.ribbonData,
             settings: this.settings.rendering,
+            download,
         };
         if (this.canvas) {
             this.renderer.postMessage(message, [this.canvas]);
@@ -162,5 +173,10 @@ export class RibbonWorkerClient {
                 return;
             }
         }
+    }
+
+    public download(fileName?: string) {
+        this.render(true);
+        this.fileName = fileName;
     }
 }

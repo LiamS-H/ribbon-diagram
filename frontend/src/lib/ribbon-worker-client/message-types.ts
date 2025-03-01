@@ -37,10 +37,12 @@ export interface IRenderMessage {
     data: IRibbonData;
     abortBuffer: Int32Array<SharedArrayBuffer>;
     settings: IRenderingSettings;
+    download: boolean;
 }
 
 export interface IRenderResponse {
     type: "render";
+    file: Blob;
 }
 
 export type IMessage = IParseMessage | ISolveMessage | IRenderMessage;

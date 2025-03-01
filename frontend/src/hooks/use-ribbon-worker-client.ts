@@ -43,4 +43,8 @@ export function useRibbonWorkerClient(
         if (!client.current) return;
         client.current.setSettings(settings);
     }, [settings]);
+
+    return {
+        download: () => client.current?.download(),
+    };
 }
