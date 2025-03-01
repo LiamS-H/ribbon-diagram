@@ -21,7 +21,7 @@ export function GraphSettings({
                         {settings.parsing.chrome_strand_count_min}
                     </Label>
                     <Slider
-                        disabled={settings.rendering.lock_chromosomes}
+                        disabled={settings.solving.lock_chromosomes}
                         id="chrome_strand_count_min"
                         defaultValue={[
                             settings.parsing.chrome_strand_count_min,
@@ -49,7 +49,7 @@ export function GraphSettings({
                         {settings.parsing.min_genes_in_chromosome}
                     </Label>
                     <Slider
-                        disabled={settings.rendering.lock_chromosomes}
+                        disabled={settings.solving.lock_chromosomes}
                         id="min_genes_in_chromosome"
                         defaultValue={[
                             settings.parsing.min_genes_in_chromosome,
@@ -89,26 +89,27 @@ export function GraphSettings({
                     />
                 </li>
             </ul>
+
             <Separator />
-            <h1 className="pt-2">Rendering</h1>
+            <h1 className="pt-2">Detangling</h1>
             <ul className="pb-4 flex flex-col gap-2">
                 <li>
                     <Label htmlFor="orthogroup_strand_count_min">
                         orthogroup_min_strands:
-                        {settings.rendering.orthogroup_strand_count_min}
+                        {settings.solving.orthogroup_strand_count_min}
                     </Label>
                     <Slider
                         id="orthogroup_strand_count_min"
                         defaultValue={[
-                            settings.rendering.orthogroup_strand_count_min,
+                            settings.solving.orthogroup_strand_count_min,
                         ]}
                         max={200}
                         step={5}
                         onValueChange={(v) => {
                             setSettings({
                                 ...settings,
-                                rendering: {
-                                    ...settings.rendering,
+                                solving: {
+                                    ...settings.solving,
                                     orthogroup_strand_count_min: v[0],
                                 },
                             });
@@ -118,21 +119,21 @@ export function GraphSettings({
                 <li>
                     <Label htmlFor="barycenter_iterations_max">
                         solver_iterations_max:
-                        {settings.rendering.barycenter_iterations_max}
+                        {settings.solving.barycenter_iterations_max}
                     </Label>
                     <Slider
-                        disabled={settings.rendering.lock_chromosomes}
+                        disabled={settings.solving.lock_chromosomes}
                         id="barycenter_iterations_max"
                         defaultValue={[
-                            settings.rendering.barycenter_iterations_max,
+                            settings.solving.barycenter_iterations_max,
                         ]}
                         max={200}
                         step={5}
                         onValueChange={(v) => {
                             setSettings({
                                 ...settings,
-                                rendering: {
-                                    ...settings.rendering,
+                                solving: {
+                                    ...settings.solving,
                                     barycenter_iterations_max: v[0],
                                 },
                             });
@@ -145,16 +146,14 @@ export function GraphSettings({
                             deterministic_solver
                         </Label>
                         <Switch
-                            disabled={settings.rendering.lock_chromosomes}
+                            disabled={settings.solving.lock_chromosomes}
                             id="deterministic_barycenter"
-                            checked={
-                                settings.rendering.deterministic_barycenter
-                            }
+                            checked={settings.solving.deterministic_barycenter}
                             onCheckedChange={(c) => {
                                 setSettings({
                                     ...settings,
-                                    rendering: {
-                                        ...settings.rendering,
+                                    solving: {
+                                        ...settings.solving,
                                         deterministic_barycenter: c,
                                     },
                                 });
@@ -169,12 +168,12 @@ export function GraphSettings({
                         </Label>
                         <Switch
                             id="lock_chromosomes"
-                            checked={settings.rendering.lock_chromosomes}
+                            checked={settings.solving.lock_chromosomes}
                             onCheckedChange={(c) => {
                                 setSettings({
                                     ...settings,
-                                    rendering: {
-                                        ...settings.rendering,
+                                    solving: {
+                                        ...settings.solving,
                                         lock_chromosomes: c,
                                     },
                                 });
@@ -182,6 +181,11 @@ export function GraphSettings({
                         />
                     </div>
                 </li>
+            </ul>
+
+            <Separator />
+            <h1 className="pt-2">Rendering</h1>
+            <ul className="pb-4 flex flex-col gap-2">
                 <li>
                     <div className="flex items-center justify-between">
                         <Label htmlFor="orientation">vertical</Label>

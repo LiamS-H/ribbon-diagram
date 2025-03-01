@@ -4,6 +4,7 @@ import {
     IParsingSettings,
     IRenderingSettings,
     IRibbonData,
+    ISolverSettings,
 } from "@/types/graph";
 import {
     IParseMessage,
@@ -66,7 +67,7 @@ export class RibbonWorkerClient {
             type: "solve",
             abortBuffer: this.arbortBuffer,
             data: this.fullRibbonData,
-            settings: this.settings.rendering,
+            settings: this.settings.solving,
         };
 
         this.solver.postMessage(message);
@@ -85,6 +86,7 @@ export class RibbonWorkerClient {
         document.body.removeChild(a);
     }
     private render(download: boolean = false) {
+        console.log("rendering");
         if (!this.ribbonData) return;
         Atomics.store(this.arbortBuffer, 0, 1);
 
@@ -151,25 +153,30 @@ export class RibbonWorkerClient {
                 return;
             }
         }
+
+        const old_solving = old_settings.solving;
+        const new_solving = new_settings.solving;
+
+        for (const key of Object.keys(
+            old_solving
+        ) as (keyof ISolverSettings)[]) {
+            if (old_solving[key] !== new_solving[key]) {
+                if (new_solving.deterministic_barycenter && this.files) {
+                    this.parse(this.files);
+                } else {
+                    this.solve();
+                }
+                return;
+            }
+        }
         const old_rendering = old_settings.rendering;
         const new_rendering = new_settings.rendering;
-        if (
-            old_rendering.thread_opacity !== new_rendering.thread_opacity ||
-            old_rendering.horizontal !== new_rendering.horizontal
-        ) {
-            this.render();
-            return;
-        }
 
         for (const key of Object.keys(
             old_rendering
         ) as (keyof IRenderingSettings)[]) {
             if (old_rendering[key] !== new_rendering[key]) {
-                if (new_rendering.deterministic_barycenter && this.files) {
-                    this.parse(this.files);
-                } else {
-                    this.solve();
-                }
+                this.render();
                 return;
             }
         }

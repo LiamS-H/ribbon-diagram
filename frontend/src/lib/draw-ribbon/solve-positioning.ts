@@ -1,9 +1,9 @@
-import { IConnectionMap, IRenderingSettings, IRibbonData } from "@/types/graph";
+import { IConnectionMap, IRibbonData, ISolverSettings } from "@/types/graph";
 import { calcStrandCounts } from "../process-files/process-files";
 
 export function SolvePositioning(
     ribbonData: IRibbonData,
-    settings: IRenderingSettings,
+    settings: ISolverSettings,
     abortBuffer: Int32Array<SharedArrayBuffer>
 ) {
     const map: IConnectionMap = {

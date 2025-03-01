@@ -1,13 +1,13 @@
 import {
     IConnectionMap,
-    IRenderingSettings,
     IRibbonData,
+    ISolverSettings,
 } from "../../types/graph";
 
 export function barycenterChromosomeOrder(
     ribbonData: IRibbonData,
     connectionMap: IConnectionMap,
-    settings: IRenderingSettings,
+    settings: ISolverSettings,
     abortBuffer: Int32Array<SharedArrayBuffer>
 ): { [key: string]: string[] } | null {
     const result: { [key: string]: string[] } = {};

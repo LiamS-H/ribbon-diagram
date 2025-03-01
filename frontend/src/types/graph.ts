@@ -5,18 +5,24 @@ export interface IParsingSettings {
     chrome_strand_count_min: number;
     min_genes_in_chromosome: number;
 }
-export interface IRenderingSettings {
+
+export interface ISolverSettings {
     orthogroup_strand_count_min: number;
     barycenter_iterations_max: number;
     deterministic_barycenter: boolean;
     lock_chromosomes: boolean;
+}
+
+export interface IRenderingSettings {
     horizontal: boolean;
     thread_opacity: number;
+    highlighted_orthgroup: string | null;
 }
 
 export interface IGraphSettings {
     parsing: IParsingSettings;
     rendering: IRenderingSettings;
+    solving: ISolverSettings;
 }
 
 export interface IChromosome {

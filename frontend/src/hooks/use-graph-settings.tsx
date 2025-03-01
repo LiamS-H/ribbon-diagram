@@ -3,13 +3,16 @@ import { useState } from "react";
 
 export function useGraphSettings() {
     return useState<IGraphSettings>(() => ({
-        rendering: {
+        solving: {
             orthogroup_strand_count_min: 50,
             barycenter_iterations_max: 50,
             deterministic_barycenter: false,
             lock_chromosomes: false,
+        },
+        rendering: {
             horizontal: false,
             thread_opacity: 0.1,
+            highlighted_orthgroup: null,
         },
         parsing: {
             e_cutoff: 0,

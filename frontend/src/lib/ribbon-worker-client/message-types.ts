@@ -3,6 +3,7 @@ import {
     IParsingSettings,
     IRenderingSettings,
     IRibbonData,
+    ISolverSettings,
 } from "@/types/graph";
 
 export interface IParseMessage {
@@ -23,7 +24,7 @@ export interface ISolveMessage {
     type: "solve";
     data: IRibbonData;
     abortBuffer: Int32Array<SharedArrayBuffer>;
-    settings: IRenderingSettings;
+    settings: ISolverSettings;
 }
 
 export interface ISolveResponse {
