@@ -201,6 +201,27 @@ export function GraphSettings({
                         <Label htmlFor="orientation">horizontal</Label>
                     </div>
                 </li>
+                <li>
+                    <Label htmlFor="thread_opacity">
+                        thread_opacity:
+                        {settings.rendering.thread_opacity}
+                    </Label>
+                    <Slider
+                        id="thread_opacity"
+                        defaultValue={[settings.rendering.thread_opacity]}
+                        max={0.5}
+                        step={0.01}
+                        onValueChange={(v) => {
+                            setSettings({
+                                ...settings,
+                                rendering: {
+                                    ...settings.rendering,
+                                    thread_opacity: v[0],
+                                },
+                            });
+                        }}
+                    />
+                </li>
             </ul>
         </>
     );

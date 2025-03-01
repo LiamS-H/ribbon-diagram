@@ -61,7 +61,6 @@ export function DrawOffscreen(
     settings: IRenderingSettings,
     abortBuffer: Int32Array
 ) {
-    // Default canvas dimensions
     canvas.height = 1000;
     canvas.width = 2000;
 
@@ -71,34 +70,30 @@ export function DrawOffscreen(
         return;
     }
 
-    // Get orientation from settings
     const isHorizontal = settings.horizontal;
 
     const columns = data.organisms.length;
     const padding = 5;
 
-    // Add space for organism labels
-    const organismLabelSize = 30; // Space for organism names
-    const label_width = 20; // Chromosome label width
-    const node_size = 10; // Size of chromosome node
+    const organismLabelSize = 30;
+    const label_width = 20;
+    const node_size = 10;
 
-    // Calculate dimensions based on orientation
     const width = canvas.width - padding * 2;
     const height = canvas.height - padding * 2;
 
-    // Calculate layout measurements based on orientation
     let contentWidth, contentHeight, elementSpacing, nodeSpacing;
 
     if (isHorizontal) {
         contentWidth = width - node_size - label_width;
         contentHeight = height - organismLabelSize;
         elementSpacing = contentWidth / (columns - 1);
-        nodeSpacing = 5; // Vertical spacing between nodes
+        nodeSpacing = 5;
     } else {
         contentWidth = width - organismLabelSize;
         contentHeight = height - node_size - label_width;
         elementSpacing = contentHeight / (columns - 1);
-        nodeSpacing = 5; // Horizontal spacing between nodes
+        nodeSpacing = 5;
     }
 
     function clear() {
@@ -106,20 +101,17 @@ export function DrawOffscreen(
     }
     clear();
 
-    // Coordinate storage for nodes
     const nodeCoords: Record<
         string,
         { x: number; y: number; w: number; h: number }
     > = {};
 
-    // Calculate node positions and dimensions
     ctx.fillStyle = "black";
     for (let i = 0; i < columns; i++) {
         const orgname = data.organisms[i];
         const org = data.orgMap[orgname];
 
         if (isHorizontal) {
-            // Horizontal layout (columns)
             let y = padding + organismLabelSize;
             for (let j = 0; j < org.chromosomes.length; j++) {
                 const chromeId = org.chromosomes[j];
@@ -141,7 +133,6 @@ export function DrawOffscreen(
                 y += node_height + nodeSpacing;
             }
         } else {
-            // Vertical layout (rows)
             let x = padding + organismLabelSize;
             for (let j = 0; j < org.chromosomes.length; j++) {
                 const chromeId = org.chromosomes[j];
@@ -164,7 +155,6 @@ export function DrawOffscreen(
         }
     }
 
-    // Initialize strand counters
     const chromeStrandCount: Record<string, { in: number; out: number }> = {};
     for (const orgId of data.organisms) {
         const org = data.orgMap[orgId];
@@ -173,7 +163,6 @@ export function DrawOffscreen(
         }
     }
 
-    // Draw ribbons
     for (const { organisms, connectionMap, syntenyGroup } of data.ribbons) {
         for (let i = 0; i < organisms.length - 1; i++) {
             if (Atomics.load(abortBuffer, 0) === 1) {
@@ -189,7 +178,6 @@ export function DrawOffscreen(
                 for (const { chromosome: ch1 } of c1) {
                     if (!nodeCoords[ch0] || !nodeCoords[ch1]) continue;
 
-                    // Get strand information
                     const out_strands =
                         data.orgMap[orgId0].chromosomeMap[ch0].outStrands;
                     const out_strand = (chromeStrandCount[ch0].out += 1);
@@ -197,11 +185,9 @@ export function DrawOffscreen(
                         data.orgMap[orgId1].chromosomeMap[ch1].inStrands;
                     const in_strand = (chromeStrandCount[ch1].in += 1);
 
-                    // Calculate starting and ending points
                     let startX, startY, endX, endY;
 
                     if (isHorizontal) {
-                        // Horizontal layout
                         startX = nodeCoords[ch0].x + nodeCoords[ch0].w;
                         startY =
                             nodeCoords[ch0].y +
@@ -212,7 +198,6 @@ export function DrawOffscreen(
                             nodeCoords[ch1].y +
                             nodeCoords[ch1].h * (in_strand / in_strands);
 
-                        // Draw horizontal bezier
                         const strokeColor =
                             data.colorMap[syntenyGroup.toUpperCase()] ||
                             "#333333";
@@ -222,7 +207,6 @@ export function DrawOffscreen(
                         ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.1})`;
                         drawHorizontalBezier(ctx, startX, startY, endX, endY);
                     } else {
-                        // Vertical layout
                         startX =
                             nodeCoords[ch0].x +
                             nodeCoords[ch0].w * (out_strand / out_strands);
@@ -233,14 +217,13 @@ export function DrawOffscreen(
                             nodeCoords[ch1].w * (in_strand / in_strands);
                         endY = nodeCoords[ch1].y;
 
-                        // Draw vertical bezier
                         const strokeColor =
                             data.colorMap[syntenyGroup.toUpperCase()] ||
                             "#333333";
                         const r = parseInt(strokeColor.slice(1, 3), 16);
                         const g = parseInt(strokeColor.slice(3, 5), 16);
                         const b = parseInt(strokeColor.slice(5, 7), 16);
-                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.1})`;
+                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${settings.thread_opacity})`;
                         drawVerticalBezier(ctx, startX, startY, endX, endY);
                     }
                 }
@@ -248,16 +231,13 @@ export function DrawOffscreen(
         }
     }
 
-    // Draw nodes and labels
     ctx.font = "12px Arial";
     for (let i = 0; i < columns; i++) {
         const orgname = data.organisms[i];
         const org = data.orgMap[orgname];
 
-        // Draw organism labels
         ctx.fillStyle = "black";
         if (isHorizontal) {
-            // Horizontal layout - organism labels at top
             const x = padding + i * elementSpacing;
             ctx.textAlign = "center";
             ctx.fillText(
@@ -266,7 +246,6 @@ export function DrawOffscreen(
                 padding + organismLabelSize / 2
             );
         } else {
-            // Vertical layout - organism labels at left
             const y = padding + i * elementSpacing;
             ctx.textAlign = "right";
             ctx.fillText(
@@ -276,25 +255,20 @@ export function DrawOffscreen(
             );
         }
 
-        // Draw chromosome nodes and labels
         for (const chrome of org.chromosomes) {
             if (!nodeCoords[chrome]) continue;
 
             const { x, y, w, h } = nodeCoords[chrome];
-            const labelText = chrome.slice(3); // Remove "chr" prefix
+            const labelText = chrome.slice(3);
 
-            // Draw node
             ctx.fillStyle = "black";
             ctx.fillRect(x, y, w, h);
 
-            // Draw label
             if (isHorizontal) {
-                // Horizontal layout - labels to the right of nodes
                 const textX = x + w + 3;
                 const textY = y + h / 2 + 4;
                 ctx.textAlign = "left";
 
-                // Add background for text readability
                 const metrics = ctx.measureText(labelText);
                 ctx.fillStyle = "white";
                 ctx.fillRect(
@@ -309,12 +283,10 @@ export function DrawOffscreen(
                 ctx.fillStyle = "black";
                 ctx.fillText(labelText, textX, textY);
             } else {
-                // Vertical layout - labels below nodes
                 const textX = x + w / 2;
                 const textY = y + h + 13;
                 ctx.textAlign = "center";
 
-                // Add background for text readability
                 const metrics = ctx.measureText(labelText);
                 ctx.fillStyle = "white";
                 ctx.fillRect(

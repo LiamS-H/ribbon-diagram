@@ -142,6 +142,13 @@ export class RibbonWorkerClient {
         }
         const old_rendering = old_settings.rendering;
         const new_rendering = new_settings.rendering;
+        if (
+            old_rendering.thread_opacity !== new_rendering.thread_opacity ||
+            old_rendering.horizontal !== new_rendering.horizontal
+        ) {
+            this.render();
+            return;
+        }
 
         for (const key of Object.keys(
             old_rendering

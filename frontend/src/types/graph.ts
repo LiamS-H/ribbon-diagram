@@ -11,6 +11,7 @@ export interface IRenderingSettings {
     deterministic_barycenter: boolean;
     lock_chromosomes: boolean;
     horizontal: boolean;
+    thread_opacity: number;
 }
 
 export interface IGraphSettings {

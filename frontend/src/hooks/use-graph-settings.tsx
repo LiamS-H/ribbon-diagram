@@ -9,6 +9,7 @@ export function useGraphSettings() {
             deterministic_barycenter: false,
             lock_chromosomes: false,
             horizontal: false,
+            thread_opacity: 0.1,
         },
         parsing: {
             e_cutoff: 0,
