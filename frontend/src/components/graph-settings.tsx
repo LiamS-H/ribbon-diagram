@@ -255,19 +255,21 @@ export function GraphSettings(props: {
                         <SelectContent>
                             <SelectGroup>
                                 <SelectLabel>Orthogroups</SelectLabel>
-                                {ribbonData?.syntenyGroups.map((synteny) => (
-                                    <SelectItem
-                                        key={synteny}
-                                        value={synteny}
-                                        style={{
-                                            color: ribbonData?.colorMap[
-                                                synteny
-                                            ],
-                                        }}
-                                    >
-                                        {synteny}
-                                    </SelectItem>
-                                ))}
+                                {ribbonData?.syntenyGroups
+                                    .toSorted()
+                                    .map((synteny) => (
+                                        <SelectItem
+                                            key={synteny}
+                                            value={synteny}
+                                            style={{
+                                                color: ribbonData?.colorMap[
+                                                    synteny
+                                                ],
+                                            }}
+                                        >
+                                            {synteny}
+                                        </SelectItem>
+                                    ))}
                             </SelectGroup>
                         </SelectContent>
                     </Select>
