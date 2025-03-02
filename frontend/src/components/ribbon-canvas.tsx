@@ -1,12 +1,10 @@
 import { useGraphSettings } from "@/hooks/use-graph-settings";
 import { Card, CardContent } from "@/components/(ui)/card";
 import { GraphSettings } from "@/components/graph-settings";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { AspectRatio } from "@/components/(ui)/aspect-ratio";
 import { IRawFiles } from "@/types/file";
 import { useRibbonWorkerClient } from "@/hooks/use-ribbon-worker-client";
-import { Button } from "@/components/(ui)/button";
-import { toast } from "sonner";
 import { Separator } from "@/components/(ui)/separator";
 import { ExportButton } from "./export-button";
 
