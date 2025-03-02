@@ -12,7 +12,7 @@ export function useGraphSettings() {
         rendering: {
             horizontal: false,
             thread_opacity: 0.1,
-            highlighted_orthgroup: null,
+            highlighted_orthgroup: "",
         },
         parsing: {
             e_cutoff: 0,

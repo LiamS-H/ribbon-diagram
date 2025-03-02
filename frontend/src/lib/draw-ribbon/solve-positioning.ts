@@ -59,6 +59,7 @@ export function SolvePositioning(
             return null;
         }
     }
+    const syntenySet = new Set<string>();
 
     for (let i = 0; i < ribbonData.ribbons.length; i++) {
         const { connectionMap, organisms } = ribbonData.ribbons[i];
@@ -84,11 +85,17 @@ export function SolvePositioning(
                 ].filter(({ chromosome: src, syntenyGroup }) => {
                     const destMap = map.map[src].map[dest];
                     const count = destMap.map[syntenyGroup];
-                    return count > settings.orthogroup_strand_count_min;
+                    if (count > settings.orthogroup_strand_count_min) {
+                        syntenySet.add(syntenyGroup);
+                        return true;
+                    }
+                    return false;
+                    // return count > settings.orthogroup_strand_count_min;
                 });
             }
         }
     }
+    ribbonData.syntenyGroups = Array.from(syntenySet);
 
     calcStrandCounts(ribbonData);
 

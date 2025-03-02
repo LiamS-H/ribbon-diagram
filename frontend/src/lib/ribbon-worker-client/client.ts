@@ -19,7 +19,7 @@ import {
 export class RibbonWorkerClient {
     private files: IParseMessage["files"] | null;
     private parsedFiles: IProcessedFiles | null;
-    private ribbonData: IRibbonData | null;
+    ribbonData: IRibbonData | null;
     private fullRibbonData: IRibbonData | null;
     private settings: IGraphSettings;
     private canvas: OffscreenCanvas | undefined;
@@ -28,7 +28,13 @@ export class RibbonWorkerClient {
     private parser: Worker;
     private arbortBuffer: Int32Array<SharedArrayBuffer>;
     private fileName: string | undefined;
+    callbacks: {
+        setRibbonData: (data: IRibbonData) => void;
+    };
     constructor(canvas: HTMLCanvasElement, settings: IGraphSettings) {
+        this.callbacks = {
+            setRibbonData: () => {},
+        };
         this.parsedFiles = null;
         this.files = null;
         this.ribbonData = null;
@@ -55,6 +61,7 @@ export class RibbonWorkerClient {
         const { data } = ev;
         this.onMessage(ev);
         this.ribbonData = data.data;
+        this.callbacks.setRibbonData(this.ribbonData);
         this.render();
     }
 
@@ -86,7 +93,6 @@ export class RibbonWorkerClient {
         document.body.removeChild(a);
     }
     private render(download: boolean = false) {
-        console.log("rendering");
         if (!this.ribbonData) return;
         Atomics.store(this.arbortBuffer, 0, 1);
 

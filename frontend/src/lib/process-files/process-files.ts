@@ -17,6 +17,7 @@ export function processFiles(
         ribbons: [],
         organisms: [],
         colorMap,
+        syntenyGroups: [],
     };
     const geneToChromosome: {
         [key: string]: {
@@ -71,6 +72,7 @@ export function processFiles(
     }
 
     const ribbons: IRibbon[] = [];
+    const syntenySet = new Set<string>();
 
     for (const { orgToGenes, orthoGroup, organisms: orthoOrgs } of groupsFile) {
         if (Atomics.load(abortBuffer, 0) === 1) {
@@ -82,6 +84,7 @@ export function processFiles(
         }
         if (syntenyFile[orthoGroup].postProb < settings.post_prob) continue;
         const syntenyGroup = syntenyFile[orthoGroup].syntenyGroup;
+        syntenySet.add(syntenyGroup);
         const organisms: string[] = [];
         const connectionMap: Record<string, IConnection[]> = {};
         for (let i = 0; i < orthoOrgs.length; i++) {
@@ -133,6 +136,7 @@ export function processFiles(
         }
         ribbons.push({ connectionMap, organisms, syntenyGroup });
     }
+    data.syntenyGroups = Array.from(syntenySet);
 
     const deleted = new Set<string>();
 

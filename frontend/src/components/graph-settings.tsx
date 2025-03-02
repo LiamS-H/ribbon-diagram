@@ -1,16 +1,27 @@
-import { IGraphSettings } from "@/types/graph";
+import { IGraphSettings, IRibbonData } from "@/types/graph";
 import { Separator } from "@/components/(ui)/separator";
-import { Slider } from "./(ui)/slider";
-import { Label } from "./(ui)/label";
-import { Switch } from "./(ui)/switch";
+import { Slider } from "@/components/(ui)/slider";
+import { Label } from "@/components/(ui)/label";
+import { Switch } from "@/components/(ui)/switch";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/(ui)/select";
+import { Button } from "./(ui)/button";
+import { X } from "lucide-react";
 
-export function GraphSettings({
-    settings,
-    setSettings,
-}: {
+export function GraphSettings(props: {
+    ribbonData: IRibbonData | null;
     settings: IGraphSettings;
     setSettings: (s: IGraphSettings) => void;
 }) {
+    const { ribbonData, settings, setSettings } = props;
+
     return (
         <>
             <h1 className="pt-2">Parsing</h1>
@@ -41,8 +52,6 @@ export function GraphSettings({
                     />
                 </li>
                 <li></li>
-                {/* <li>e_cutoff:{settings.parsing.e_cutoff}</li> */}
-                {/* <li>gene_count_max:{settings.parsing.gene_count_max}</li> */}
                 <li>
                     <Label htmlFor="min_genes_in_chromosome">
                         min_chromosome_genes:
@@ -187,7 +196,7 @@ export function GraphSettings({
             <h1 className="pt-2">Rendering</h1>
             <ul className="pb-4 flex flex-col gap-2">
                 <li>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                         <Label htmlFor="orientation">vertical</Label>
                         <Switch
                             id="orientation"
@@ -225,6 +234,59 @@ export function GraphSettings({
                             });
                         }}
                     />
+                </li>
+                <li className="flex gap-2">
+                    <Select
+                        disabled={ribbonData === null}
+                        onValueChange={(v) => {
+                            setSettings({
+                                ...settings,
+                                rendering: {
+                                    ...settings.rendering,
+                                    highlighted_orthgroup: v,
+                                },
+                            });
+                        }}
+                        value={settings.rendering.highlighted_orthgroup}
+                    >
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Highlight Orthogroup" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Orthogroups</SelectLabel>
+                                {ribbonData?.syntenyGroups.map((synteny) => (
+                                    <SelectItem
+                                        key={synteny}
+                                        value={synteny}
+                                        style={{
+                                            color: ribbonData?.colorMap[
+                                                synteny
+                                            ],
+                                        }}
+                                    >
+                                        {synteny}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    <Button
+                        variant="destructive"
+                        disabled={!settings.rendering.highlighted_orthgroup}
+                        size="icon"
+                        onClick={() => {
+                            setSettings({
+                                ...settings,
+                                rendering: {
+                                    ...settings.rendering,
+                                    highlighted_orthgroup: "",
+                                },
+                            });
+                        }}
+                    >
+                        <X />
+                    </Button>
                 </li>
             </ul>
         </>

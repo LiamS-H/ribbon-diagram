@@ -187,6 +187,19 @@ export function DrawOffscreen(
 
                     let startX, startY, endX, endY;
 
+                    const synteny = syntenyGroup.toUpperCase();
+                    const opacity = settings.highlighted_orthgroup
+                        ? synteny === settings.highlighted_orthgroup
+                            ? 0.5
+                            : settings.thread_opacity
+                        : settings.thread_opacity;
+                    const strokeColor =
+                        data.colorMap[syntenyGroup.toUpperCase()] || "#333333";
+                    const r = parseInt(strokeColor.slice(1, 3), 16);
+                    const g = parseInt(strokeColor.slice(3, 5), 16);
+                    const b = parseInt(strokeColor.slice(5, 7), 16);
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+
                     if (isHorizontal) {
                         startX = nodeCoords[ch0].x + nodeCoords[ch0].w;
                         startY =
@@ -198,13 +211,6 @@ export function DrawOffscreen(
                             nodeCoords[ch1].y +
                             nodeCoords[ch1].h * (in_strand / in_strands);
 
-                        const strokeColor =
-                            data.colorMap[syntenyGroup.toUpperCase()] ||
-                            "#333333";
-                        const r = parseInt(strokeColor.slice(1, 3), 16);
-                        const g = parseInt(strokeColor.slice(3, 5), 16);
-                        const b = parseInt(strokeColor.slice(5, 7), 16);
-                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.1})`;
                         drawHorizontalBezier(ctx, startX, startY, endX, endY);
                     } else {
                         startX =
@@ -217,13 +223,6 @@ export function DrawOffscreen(
                             nodeCoords[ch1].w * (in_strand / in_strands);
                         endY = nodeCoords[ch1].y;
 
-                        const strokeColor =
-                            data.colorMap[syntenyGroup.toUpperCase()] ||
-                            "#333333";
-                        const r = parseInt(strokeColor.slice(1, 3), 16);
-                        const g = parseInt(strokeColor.slice(3, 5), 16);
-                        const b = parseInt(strokeColor.slice(5, 7), 16);
-                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${settings.thread_opacity})`;
                         drawVerticalBezier(ctx, startX, startY, endX, endY);
                     }
                 }

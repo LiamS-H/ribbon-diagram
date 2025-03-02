@@ -1,7 +1,7 @@
 import { RibbonWorkerClient } from "@/lib/ribbon-worker-client/client";
 import { IRawFiles } from "@/types/file";
-import { IGraphSettings } from "@/types/graph";
-import { useEffect, useRef } from "react";
+import { IGraphSettings, IRibbonData } from "@/types/graph";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function useRibbonWorkerClient(
@@ -10,11 +10,13 @@ export function useRibbonWorkerClient(
     settings: IGraphSettings
 ) {
     const client = useRef<null | RibbonWorkerClient>(null);
+    const [ribbonData, setRibbonData] = useState<IRibbonData | null>(null);
 
     useEffect(() => {
         if (!canvas) return;
         if (client.current) return;
         client.current = new RibbonWorkerClient(canvas, settings);
+        client.current.callbacks.setRibbonData = setRibbonData;
     }, [canvas]); //eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
@@ -42,9 +44,11 @@ export function useRibbonWorkerClient(
     useEffect(() => {
         if (!client.current) return;
         client.current.setSettings(settings);
+        if (!client.current.ribbonData) return;
     }, [settings]);
 
     return {
         download: () => client.current?.download(),
+        ribbonData,
     };
 }

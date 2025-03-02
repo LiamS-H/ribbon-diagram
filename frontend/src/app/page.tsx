@@ -14,9 +14,6 @@ import {
 } from "@/components/(ui)/sheet";
 import { File } from "lucide-react";
 import { RibbonCanvas } from "@/components/ribbon-canvas";
-import { useGraphSettings } from "@/hooks/use-graph-settings";
-import { Card, CardContent } from "@/components/(ui)/card";
-import { GraphSettings } from "@/components/graph-settings";
 import {
     DragDropContext,
     Droppable,
@@ -27,7 +24,6 @@ import {
 export default function Page() {
     const { handleFileInput, bedFiles, n0File, synFile, colorFile } =
         useFileInput();
-    const [settings, setSettings] = useGraphSettings();
     const [filesOpen, setFilesOpen] = useState(true);
 
     const [bedFilesOrder, setBedFilesOrder] = useState<number[]>([]);
@@ -147,26 +143,14 @@ export default function Page() {
                 <File />
             </Button>
 
-            <div className="flex flex-col lg:flex-row gap-4 px-16 pt-4">
-                <RibbonCanvas
-                    files={{
-                        bedFiles: orderedBedFiles,
-                        n0File,
-                        synFile,
-                        colorFile,
-                    }}
-                    settings={settings}
-                />
-                <Card className="min-w-64">
-                    <CardContent>
-                        <GraphSettings
-                            setSettings={setSettings}
-                            settings={settings}
-                        />
-                        <Separator />
-                    </CardContent>
-                </Card>
-            </div>
+            <RibbonCanvas
+                files={{
+                    bedFiles: orderedBedFiles,
+                    n0File,
+                    synFile,
+                    colorFile,
+                }}
+            />
         </>
     );
 }

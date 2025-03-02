@@ -16,7 +16,7 @@ export interface ISolverSettings {
 export interface IRenderingSettings {
     horizontal: boolean;
     thread_opacity: number;
-    highlighted_orthgroup: string | null;
+    highlighted_orthgroup: string;
 }
 
 export interface IGraphSettings {
@@ -61,6 +61,7 @@ export interface IRibbonData {
     organisms: string[];
     ribbons: IRibbon[];
     colorMap: Record<string, string>;
+    syntenyGroups: string[];
 }
 
 export interface IConnectionMap {
