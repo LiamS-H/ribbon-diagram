@@ -6,9 +6,10 @@ export async function parseBedAsStream(file: IFile): Promise<OrgFile> {
         genes: [],
         name: "_",
     };
-    result.name = result.name === "_" ? file.name : result.name;
 
     await parseAsStream(file, (line) => processLine(line, result));
+
+    result.name = result.name === "_" ? file.name : result.name;
 
     return result;
 }
@@ -23,6 +24,7 @@ function processLine(line: string, result: OrgFile): void {
         const [, chromosome, startIndexStr, endIndexStr, gene] = match;
         if (result.name === "_" && /^\w*\|[0-9]+\.[0-9]+$/.test(gene)) {
             result.name = gene.split("|")[0];
+            console.log(gene);
         }
 
         const startIndex = parseInt(startIndexStr, 10);
